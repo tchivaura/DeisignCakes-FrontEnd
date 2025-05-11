@@ -1,0 +1,397 @@
+{
+  "customers": [
+    {
+      "id": "1",
+      "firstName": "Mark",
+      "surname": "Otto",
+      "address": "123 Main St",
+      "telephone": "123456789",
+      "gender": "Male",
+      "dob": "1990-05-20",
+      "base": "Base A",
+      "label": "Bad"
+    },
+    {
+      "id": "b397",
+      "firstName": "Tinashe",
+      "surname": "Chivaura",
+      "address": "2772 Bluffhill Westgate",
+      "telephone": "0771168282",
+      "base": "Old Mutual",
+      "gender": "Male",
+      "dob": "1995-07-21",
+      "label": "New"
+    },
+    {
+      "id": "231f",
+      "firstName": "Tapiwa",
+      "surname": "Chibindi",
+      "address": "16292 Marondra",
+      "telephone": "0774356252",
+      "base": "Old Mutual",
+      "gender": "Male",
+      "dob": "2025-04-18",
+      "label": "New"
+    },
+    {
+      "id": "fef6c1aa-cabf-43c4-9d22-10c25666e7c3",
+      "firstName": "TobuzA",
+      "surname": "Chivaura",
+      "address": "2772 Bluffhill Westgate",
+      "telephone": "0771168282",
+      "base": "Old Mutual",
+      "gender": "Male",
+      "dob": "2025-04-01",
+      "label": "New"
+    },
+    {
+      "id": "74010bf4-c220-47e1-a461-4094d13351ef",
+      "firstName": "Tinash",
+      "surname": "Chivaura",
+      "address": "2772 Bluffhill Westgate",
+      "telephone": "0771168282",
+      "base": "Old Mutual",
+      "gender": "Male",
+      "dob": "2025-04-02",
+      "label": "Existing"
+    },
+    {
+      "id": "ef46ac72-e0b2-49d4-ae47-a1bd9abc9931",
+      "firstName": "Takuu",
+      "surname": "Chivaura",
+      "address": "2772 Bluffhill Westgate",
+      "telephone": "0771168282",
+      "base": "Old Mutual",
+      "gender": "Male",
+      "dob": "2025-01-15",
+      "label": "New"
+    },
+    {
+      "id": "0ede",
+      "firstName": "Odette",
+      "surname": "Sanyika",
+      "telephone": "0772437319",
+      "base": "",
+      "label": "New"
+    },
+    {
+      "id": "5136",
+      "firstName": "Mrs Nyatsambo",
+      "surname": "",
+      "telephone": "0771168282",
+      "base": "",
+      "address": "2772 Bluffhill Westgate",
+      "gender": "Female",
+      "dob": "1990-01-10",
+      "label": "New"
+    }
+  ],
+  "lovedOnes": [
+    {
+      "id": "b986",
+      "fullName": "John Oto",
+      "relationship": "Brother",
+      "contact": "0771168282",
+      "customerId": 1
+    },
+    {
+      "id": "5acf",
+      "fullName": "John Oto5",
+      "relationship": "Brother",
+      "contact": "0771168282",
+      "customerId": "fef6c1aa-cabf-43c4-9d22-10c25666e7c3"
+    },
+    {
+      "id": "4aac",
+      "fullName": "Tendai Chivaura",
+      "relationship": "Sister",
+      "contact": "077116828241",
+      "customerId": "b397"
+    },
+    {
+      "id": "691a",
+      "fullName": "Taps Nyatsambo",
+      "relationship": "Brother",
+      "contact": "0771168282",
+      "customerId": "5136"
+    }
+  ],
+  "labels": [
+    {
+      "id": "1",
+      "labelname": "New"
+    },
+    {
+      "id": "2",
+      "labelname": "Existing"
+    },
+    {
+      "id": "3",
+      "labelname": "Bad"
+    }
+  ],
+  "Products": [
+    {
+      "id": "1",
+      "ProductName": "Chocolate Mouse"
+    },
+    {
+      "id": "2",
+      "ProductName": "Carrot"
+    },
+    {
+      "id": "3",
+      "ProductName": "Lemon Cake"
+    }
+  ],
+  "ProductPrices": [
+    {
+      "ProductId": "1",
+      "SizeId": "1",
+      "Price": "20",
+      "id": "3469"
+    },
+    {
+      "id": "c81f",
+      "ProductId": "2",
+      "SizeId": "1",
+      "Price": "20"
+    }
+  ],
+  "ProductSizes": [
+    {
+      "id": "1",
+      "size": "small"
+    },
+    {
+      "id": "2",
+      "size": "medium"
+    },
+    {
+      "id": "3",
+      "size": "large"
+    },
+    {
+      "id": "4",
+      "size": "cupcake"
+    },
+    {
+      "id": "5",
+      "size": "slice"
+    }
+  ],
+  "OrderStatuses": [
+    {
+      "id": "1",
+      "status": "Pending"
+    },
+    {
+      "id": "2",
+      "status": "Partially Paid"
+    },
+    {
+      "id": "3",
+      "status": "Billed"
+    },
+    {
+      "id": "4",
+      "status": "Cancelled"
+    }
+  ],
+  "orders": [
+    {
+      "id": "1",
+      "orderdate": "2025-04-22T14:30",
+      "orderproduct": "2",
+      "size": "2",
+      "orderperson": "self",
+      "price": "20",
+      "extrainstructions": "None",
+      "customerId": 1,
+      "orderstatus": "closed"
+    },
+    {
+      "id": "5bfb",
+      "orderdate": "2025-04-24T07:00",
+      "orderproduct": "1",
+      "size": "2",
+      "orderperson": "self",
+      "price": 35,
+      "extrainstructions": "less sugar",
+      "customerId": "b397",
+      "orderstatus": "Billed",
+      "quantity": 2
+    },
+    {
+      "id": "58f7",
+      "orderdate": "2025-05-02T23:41",
+      "orderproduct": "1",
+      "size": "1",
+      "orderperson": "4aac",
+      "price": "20",
+      "quantity": "1",
+      "extrainstructions": "less sugar",
+      "customerId": "b397",
+      "orderstatus": "Billed"
+    },
+    {
+      "id": "7309",
+      "orderdate": "2025-05-03T19:10",
+      "orderproduct": "1",
+      "size": "1",
+      "orderperson": "self",
+      "price": "6",
+      "quantity": "2",
+      "extrainstructions": "less sugar",
+      "customerId": "231f",
+      "orderstatus": "Billed"
+    },
+    {
+      "id": "2ac6",
+      "orderdate": "2025-05-06T00:51",
+      "orderproduct": "1",
+      "size": "1",
+      "orderperson": "4aac",
+      "price": "6",
+      "quantity": "2",
+      "extrainstructions": "less sugar",
+      "customerId": "b397",
+      "orderstatus": "Billed"
+    },
+    {
+      "id": "79b7",
+      "orderdate": "2025-05-07T21:53",
+      "orderproduct": "2",
+      "size": "1",
+      "orderperson": "self",
+      "price": "20",
+      "quantity": "2",
+      "extrainstructions": "less sugar",
+      "customerId": "b397",
+      "orderstatus": "Billed",
+      "clerk": "TinTin"
+    },
+    {
+      "id": "7ccf",
+      "orderdate": "2025-05-09T09:22",
+      "orderproduct": "2",
+      "size": "1",
+      "orderperson": "4aac",
+      "price": "20",
+      "quantity": "1",
+      "extrainstructions": "please add fresh cream",
+      "customerId": "b397",
+      "orderstatus": "Billed",
+      "clerk": "TestUser"
+    },
+    {
+      "id": "6cfe",
+      "orderdate": "2025-05-09T10:47",
+      "orderproduct": "2",
+      "size": "1",
+      "orderperson": "4aac",
+      "price": "20",
+      "quantity": "1",
+      "extrainstructions": "",
+      "customerId": "b397",
+      "orderstatus": "Pending",
+      "clerk": "TestUser"
+    }
+  ],
+  "users": [
+    {
+      "id": "1",
+      "firstName": "Tinashe",
+      "lastName": "Chivaura",
+      "userName": "TinTin",
+      "password": "224490Hi",
+      "Role": "Admin"
+    },
+    {
+      "id": "62ba",
+      "firstName": "TestUser",
+      "lastName": "TestUser",
+      "userName": "TestUser",
+      "password": "224490Hi",
+      "Role": "User"
+    }
+  ],
+  "payments": [
+    {
+      "id": "05f2",
+      "paymenttype": "1",
+      "amount": "70",
+      "date": "2025-04-29",
+      "orderid": "5bfb"
+    },
+    {
+      "id": "f4b0",
+      "paymenttype": "1",
+      "amount": "20",
+      "date": "2025-05-02",
+      "orderid": "58f7"
+    },
+    {
+      "id": "7a62",
+      "paymenttype": "1",
+      "amount": "12",
+      "date": "2025-05-03",
+      "orderid": "7309"
+    },
+    {
+      "id": "bdd3",
+      "paymenttype": "2",
+      "amount": "12",
+      "date": "2025-05-07",
+      "orderid": "2ac6"
+    },
+    {
+      "id": "3036",
+      "paymenttype": "3",
+      "amount": "40",
+      "date": "2025-05-07",
+      "orderid": "79b7",
+      "clerk": "TinTin"
+    },
+    {
+      "id": "82ca",
+      "paymenttype": "2",
+      "amount": "20",
+      "date": "2025-05-09",
+      "orderid": "7ccf",
+      "clerk": "TestUser"
+    }
+  ],
+  "paymenttypes": [
+    {
+      "id": "1",
+      "name": "Cash"
+    },
+    {
+      "id": "2",
+      "name": "Ecocash"
+    },
+    {
+      "id": "3",
+      "name": "Innbucks"
+    }
+  ],
+  "roles": [
+    {
+      "id": "1",
+      "name": "Admin"
+    },
+    {
+      "id": "2",
+      "name": "User"
+    }
+  ],
+  "complaints": [
+    {
+      "id": "e164",
+      "customerId": "b397",
+      "orderId": "7ccf",
+      "complaint": "the cake was not fresh"
+    }
+  ]
+}
