@@ -50,9 +50,9 @@ function Login() {
         
         if (user) {
           window.localStorage.setItem("loggedin", true);
-          window.localStorage.setItem("role", user.Role); 
+          window.localStorage.setItem("role", user.role); 
           window.localStorage.setItem("username", user.userName);
-         
+        
           navigate("/dashboard");
         } else {
           toast.warn("Username or password is incorrect");

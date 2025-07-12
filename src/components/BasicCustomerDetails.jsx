@@ -39,7 +39,7 @@ function BasicCustomerDetails({ customer }) {
                 <textarea
                   className="form-control"
                   name="address"
-                  value={customer?.address || ''}
+                  value={customer?.addresss || ''}
                   readOnly
                 />
               </div>

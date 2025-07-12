@@ -4,28 +4,197 @@ import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 function CustomerComplaints() {
-   
-     const [customerComplaints, setcustomerComplaints] = useState('');
-     const [filteredComplaints, setfilteredComplaints] = useState([]);
+  const [complaints, setComplaints] = useState([]);
+  const [filteredComplaints, setFilteredComplaints] = useState([]);
+  const [customers, setCustomers] = useState([]);
+  const [products, setProducts] = useState([]);
+  const [sizes, setSizes] = useState([]);
+  const [productFilter, setProductFilter] = useState('');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [searchName, setSearchName] = useState('');
+  const [lovedOnes, setLovedOnes] = useState([]);
+  const [orders, setOrders] = useState([]);
 
-     
+  useEffect(() => {
+    fetchComplaints();
+    axiosInstance.get('/orders').then(res => setOrders(res.data));
+    axiosInstance.get('/customers').then(res => setCustomers(res.data));
+    axiosInstance.get('/Products').then(res => setProducts(res.data));
+    axiosInstance.get('/ProductSizes').then(res => setSizes(res.data));
+    axiosInstance.get('/lovedOnes').then(res => setLovedOnes(res.data));
+  }, []);
 
-    useEffect(() => {
-      fetchComplaints();
-      }, []);
-    
-       
-     const  fetchComplaints = async () =>(
-       await axiosInstance.get('/customercomplaints')
-       .then(res=>setcustomerComplaints(res.data))
-       .catch((err)=>console.log(err))
-     )
+  const fetchComplaints = async () => {
+    try {
+      const res = await axiosInstance.get('/Complaints');
+      setComplaints(res.data);
+      setFilteredComplaints(res.data);
+    } catch (err) {
+      console.log(err);
+    }
+  };
 
-     
+  const getCustomerName = (id) => {
+    const customer = customers.find(c => c.id === id);
+    return customer ? `${customer.firstName} ${customer.surname}` : 'Unknown';
+  };
+
+  const getProductName = (id) => {
+    const product = products.find(p => p.id === id);
+    return product ? product.productName : 'Unknown';
+  };
+
+  const getProductOrderID = (orderId) => {
+    const order = orders.find(o => o.id === orderId);
+    return order ? order.orderproduct : null;
+  };
+
+  const applyFilters = () => {
+    let filtered = complaints;
+
+    if (searchName.trim()) {
+      filtered = filtered.filter(c => {
+        const customerName = getCustomerName(c.customerId).toLowerCase();
+        return customerName.includes(searchName.toLowerCase());
+      });
+    }
+
+    if (productFilter) {
+      filtered = filtered.filter(c => {
+        const productId = getProductOrderID(c.orderId);
+        return productId === parseInt(productFilter);
+      });
+    }
+
+    if (startDate) {
+      filtered = filtered.filter(c => new Date(c.date) >= new Date(startDate));
+    }
+
+    if (endDate) {
+      filtered = filtered.filter(c => new Date(c.date) <= new Date(endDate));
+    }
+
+    setFilteredComplaints(filtered);
+  };
+
+  useEffect(() => {
+    applyFilters();
+  }, [searchName, productFilter, startDate, endDate, complaints]);
+
+  const resetFilters = () => {
+    setSearchName('');
+    setProductFilter('');
+    setStartDate('');
+    setEndDate('');
+    setFilteredComplaints(complaints);
+  };
 
   return (
-    <div>Tubas</div>
+    <div className="pcoded-main-container">
+      <div className="pcoded-wrapper">
+        <div className="pcoded-content">
+          <div className="pcoded-inner-content">
+            <div className="main-body">
+              <div className="page-wrapper"></div>
+
+              <div className="mb-3">
+                <h5>Complaints</h5>
+              </div>
+
+              <div className="card mb-4">
+                <div className="card-body">
+                  <div className="row mb-3">
+                    <div className="col-md-3 mb-2">
+                      <label htmlFor="searchCustomer" className="form-label">Search Customer</label>
+                      <input
+                        id="searchCustomer"
+                        type="text"
+                        className="form-control"
+                        placeholder="Enter customer name"
+                        value={searchName}
+                        onChange={(e) => setSearchName(e.target.value)}
+                      />
+                    </div>
+
+                    <div className="col-md-3 mb-2">
+                      <label htmlFor="productFilter" className="form-label">Filter by Product</label>
+                      <select
+                        id="productFilter"
+                        className="form-control"
+                        value={productFilter}
+                        onChange={(e) => setProductFilter(e.target.value)}
+                      >
+                        <option value="">All Products</option>
+                        {products.map(product => (
+                          <option key={product.id} value={product.id}>
+                            {product.productName}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="col-md-2 mb-2">
+                      <label htmlFor="fromDate" className="form-label">From Date</label>
+                      <input
+                        id="fromDate"
+                        type="date"
+                        className="form-control"
+                        value={startDate}
+                        onChange={(e) => setStartDate(e.target.value)}
+                      />
+                    </div>
+
+                    <div className="col-md-2 mb-2">
+                      <label htmlFor="toDate" className="form-label">To Date</label>
+                      <input
+                        id="toDate"
+                        type="date"
+                        className="form-control"
+                        value={endDate}
+                        onChange={(e) => setEndDate(e.target.value)}
+                      />
+                    </div>
+
+                    <div className="col-md-2 mb-2 d-flex align-items-end">
+                      <button className="btn btn-secondary w-100" onClick={resetFilters}>
+                        Clear Filters
+                      </button>
+                    </div>
+                  </div>
+
+                  <table className="table table-bordered">
+                    <thead className="thead-light">
+                      <tr>
+                        <th>Order ID</th>
+                        <th>Date</th>
+                        <th>Customer</th>
+                        <th>Product</th>
+                        <th>Complaint</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredComplaints.map((complaint) => (
+                        <tr key={complaint.id}>
+                          <td>{complaint.orderId}</td>
+                          <td>{complaint.date}</td>
+                          <td>{getCustomerName(complaint.customerId)}</td>
+                          <td>{getProductName(getProductOrderID(complaint.orderId))}</td>
+                          <td>{complaint.complaint}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <ToastContainer />
+    </div>
   );
 }
 
-export default CustomerComplaints
+export default CustomerComplaints;

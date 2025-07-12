@@ -16,6 +16,12 @@ import Products from './defaults/Products';
 import PaymentTypes from './defaults/PaymentTypes';
 import AllPayments from './defaults/Allpayments';
 import ProductPricing from './defaults/ProductPricing';
+import BasicCustomerDetails from './components/BasicCustomerDetails';
+import NewCustomer from './defaults/NewCustomer';
+import CustomerComplaints from './defaults/CustomerComplaints';
+import Expenses from './defaults/Expenses';
+
+import AllFinances from './defaults/AllFinances';
 
 
 function AppContent() {
@@ -26,14 +32,13 @@ function AppContent() {
   
 
   useEffect(() => {
-    // If not logged in and not already on login page, redirect to login
-    if (!window.localStorage.getItem("loggedin") && !isLoginPage) {
-      
+    const isLoggedIn = localStorage.getItem("loggedin") === "true";
+  
+    if (!isLoggedIn && !isLoginPage) {
       navigate("/login");
     }
-   
-   // console.log(window.localStorage.getItem("role"));
-  }, [navigate, location.pathname]);  // watch for changes
+  }, [navigate, location.pathname]);
+  
 
   return (
     <div>
@@ -55,6 +60,11 @@ function AppContent() {
         <Route path='/paymenttypes' element={<PaymentTypes />} />
         <Route path='/allpayments' element={<AllPayments />} />
         <Route path='/productsprice' element={<ProductPricing />} />
+        <Route path="/new-customer" element={<NewCustomer />} />
+        <Route path="/BasicCustomerDetails" element={<BasicCustomerDetails />} />
+        <Route path="/complains" element={<CustomerComplaints />} />
+        <Route path="/expenses" element={<Expenses />} />
+        <Route path="/alltransactions" element={<AllFinances/>} />
       </Routes>
     </div>
   );

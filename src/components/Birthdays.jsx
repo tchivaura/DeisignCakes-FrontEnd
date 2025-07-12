@@ -1,238 +1,137 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react';
+import axiosInstance from '../api/axios';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function Birthdays() {
+  const [lovedones, setLovedones] = useState([]);
+  const [customers, setCustomers] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [customersRes, lovedonesRes] = await Promise.all([
+          axiosInstance.get('/customers'),
+          axiosInstance.get('/lovedOnes/upcomingbirthdays'),
+        ]);
+
+        setCustomers(customersRes.data);
+        setLovedones(lovedonesRes.data);
+
+        // Only show toast if there are upcoming birthdays
+        if (lovedonesRes.data.length > 0) {
+          toast.info(`🎉 You have ${lovedonesRes.data.length} upcoming birthdays!`, {
+            position: 'top-right',
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+          });
+        }
+      } catch (err) {
+        console.error('Error fetching birthday data:', err);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  const getCustomerName = (id) => {
+    const customer = customers.find(c => c.id === id);
+    return customer ? `${customer.firstName} ${customer.surname}` : 'Unknown';
+  };
+
+  const getCustomerPhoneNumber = (id) => {
+    const customer = customers.find(c => c.id === id);
+    return customer ? customer.telephone : 'Unknown';
+  };
+
+  const indexOfLast = currentPage * itemsPerPage;
+  const indexOfFirst = indexOfLast - itemsPerPage;
+  const currentItems = lovedones.slice(indexOfFirst, indexOfLast);
+  const totalPages = Math.ceil(lovedones.length / itemsPerPage);
+
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
   return (
     <>
-     <div className="col-xl-12 col-md-12">
-                <div className="card table-card">
-                  <div className="card-header">
-                    <h5 className="top-heading">Up Coming Customer Loved Ones Birthdays</h5>
-                  </div>
-                  <div className="card-body px-0 py-0">
-                    <div className="table-responsive">
-                      <div
-                        className="session-scroll"
-                        style={{ height: 478, position: "relative" }}
-                      >
-                        <table className="table table-hover m-b-0">
-                          <thead>
-                            <tr>
-                              <th>
-                                <span>Name</span>
-                              </th>
-                              <th>
-                                <span>
-                                  Surname
-                                 
-                                </span>
-                              </th>
-                              <th>
-                                <span>
-                                  Date of Birth
-                                  
-                                </span>
-                              </th>
-                              <th>
-                                <span>
-                                  BirthDay Date
-                                  
-                                </span>
-                              </th>
-                              <th>
-                                <span>
-                                  Gender
-                                
-                                </span>
-                              </th>
-                              <th>
-                                <span>
-                                  Telephone
-                                  
-                                </span>
-                              </th>
-                              <th>
-                                <span>
-                                  Relation To Customer
-                                  
-                                </span>
-                              </th>
-                              <th>
-                                <span>
-                                  Customer Name
-                                 
-                                </span>
-                              </th>
-                              <th>
-                                <span>
-                                  
-                                 
-                                </span>
-                              </th>
-                              <th>
-                                <span>
-                                  Customer Number
-                                 
-                                </span>
-                              </th>
-                              
-                            </tr>
-                          </thead>
-                          <tbody>
-                            <tr>
-                              <td>Total and average</td>
-                              <td>1300</td>
-                              <td>1025</td>
-                              <td>14005</td>
-                              <td>95,3%</td>
-                              <td>29,7%</td>
-                              <td>3,25</td>
-                              <td>2:30</td>
-                              <td>45.5%</td>
-                              <td>45.5%</td>
-                            </tr>
-                            <tr>
-                              <td>8-11-2016</td>
-                              <td>10</td>
-                              <td>
-                                786
-                                <div
-                                  className="progress mt-1"
-                                  style={{ height: 4 }}
-                                >
-                                  <div
-                                    className="progress-bar bg-danger rounded"
-                                    role="progressbar"
-                                    style={{ width: "60%" }}
-                                    aria-valuenow={60}
-                                    aria-valuemin={0}
-                                    aria-valuemax={100}
-                                  />
-                                </div>
-                              </td>
-                              <td>
-                                485
-                                <div
-                                  className="progress mt-1"
-                                  style={{ height: 4 }}
-                                >
-                                  <div
-                                    className="progress-bar bg-primary rounded"
-                                    role="progressbar"
-                                    style={{ width: "50%" }}
-                                    aria-valuenow={50}
-                                    aria-valuemin={0}
-                                    aria-valuemax={100}
-                                  />
-                                </div>
-                              </td>
-                              <td>
-                                769
-                                <div
-                                  className="progress mt-1"
-                                  style={{ height: 4 }}
-                                >
-                                  <div
-                                    className="progress-bar bg-warning rounded"
-                                    role="progressbar"
-                                    style={{ width: "70%" }}
-                                    aria-valuenow={70}
-                                    aria-valuemin={0}
-                                    aria-valuemax={100}
-                                  />
-                                </div>
-                              </td>
-                              <td>
-                                45,3%
-                                <div
-                                  className="progress mt-1"
-                                  style={{ height: 4 }}
-                                >
-                                  <div
-                                    className="progress-bar bg-success rounded"
-                                    role="progressbar"
-                                    style={{ width: "60%" }}
-                                    aria-valuenow={60}
-                                    aria-valuemin={0}
-                                    aria-valuemax={100}
-                                  />
-                                </div>
-                              </td>
-                              <td>
-                                6,7%
-                                <div
-                                  className="progress mt-1"
-                                  style={{ height: 4 }}
-                                >
-                                  <div
-                                    className="progress-bar bg-info rounded"
-                                    role="progressbar"
-                                    style={{ width: "30%" }}
-                                    aria-valuenow={30}
-                                    aria-valuemin={0}
-                                    aria-valuemax={100}
-                                  />
-                                </div>
-                              </td>
-                              <td>
-                                8,56
-                                <div
-                                  className="progress mt-1"
-                                  style={{ height: 4 }}
-                                >
-                                  <div
-                                    className="progress-bar bg-danger rounded"
-                                    role="progressbar"
-                                    style={{ width: "40%" }}
-                                    aria-valuenow={40}
-                                    aria-valuemin={0}
-                                    aria-valuemax={100}
-                                  />
-                                </div>
-                              </td>
-                              <td>
-                                10:55
-                                <div
-                                  className="progress mt-1"
-                                  style={{ height: 4 }}
-                                >
-                                  <div
-                                    className="progress-bar bg-warning rounded"
-                                    role="progressbar"
-                                    style={{ width: "70%" }}
-                                    aria-valuenow={70}
-                                    aria-valuemin={0}
-                                    aria-valuemax={100}
-                                  />
-                                </div>
-                              </td>
-                              <td>
-                                33.8%
-                                <div
-                                  className="progress mt-1"
-                                  style={{ height: 4 }}
-                                >
-                                  <div
-                                    className="progress-bar bg-success rounded"
-                                    role="progressbar"
-                                    style={{ width: "40%" }}
-                                    aria-valuenow={40}
-                                    aria-valuemin={0}
-                                    aria-valuemax={100}
-                                  />
-                                </div>
-                              </td>
-                            </tr>
-                           
-                            
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+      <ToastContainer />
+      <div className="col-xl-12 col-md-12">
+        <div className="card table-card">
+          <div className="card-header">
+            <h5 className="top-heading">{lovedones.length} Upcoming Birthdays</h5>
+          </div>
+          <div className="card-body px-0 py-0">
+            <div className="table-responsive">
+              <div className="session-scroll" style={{ height: 478, position: "relative" }}>
+                <table className="table table-hover m-b-0">
+                  <thead>
+                    <tr>
+                      <th>FullName</th>
+                      <th>Turning</th>
+                      <th>BirthDay Date</th>
+                      <th>Gender</th>
+                      <th>Relation To Customer</th>
+                      <th>Customer Name</th>
+                      <th>Customer Number</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {currentItems.length > 0 ? (
+                      currentItems.map((lovedone, index) => (
+                        <tr key={index}>
+                          <td>{lovedone.lovedOneName}</td>
+                          <td>{lovedone.ageTurning}</td>
+                          <td>
+                            {new Date(lovedone.nextBirthday).toLocaleDateString('en-GB', {
+                              weekday: 'long',
+                              day: '2-digit',
+                              month: 'long',
+                              year: 'numeric'
+                            })}
+                          </td>
+                          <td>{lovedone.gender}</td>
+                          <td>{lovedone.relationship}</td>
+                          <td>{getCustomerName(lovedone.customerId)}</td>
+                          <td>{getCustomerPhoneNumber(lovedone.customerId)}</td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan="7" className="text-center text-muted">
+                          No upcoming birthdays
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
               </div>
+            </div>
+
+            {/* Pagination Controls */}
+            {lovedones.length > 0 && (
+              <div className="d-flex justify-content-center align-items-center mt-3 mb-3">
+                <nav>
+                  <ul className="pagination">
+                    {[...Array(totalPages)].map((_, index) => (
+                      <li key={index} className={`page-item ${currentPage === index + 1 ? 'active' : ''}`}>
+                        <button className="page-link" onClick={() => paginate(index + 1)}>
+                          {index + 1}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </nav>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
     </>
-  )
+  );
 }
 
-export default Birthdays
+export default Birthdays;

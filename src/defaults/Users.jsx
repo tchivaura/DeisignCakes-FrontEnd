@@ -141,10 +141,10 @@ function Users() {
                                   <td>{user.lastName}</td>
                                   <td>{user.userName}</td>
                                   <td>{user.password}</td>
-                                  <td>{user.Role}</td>
+                                  <td>{user.role}</td>
                                   <td>
                                     <button className="btn btn-sm btn-info mr-2" onClick={() => handleEditUser(user)}>Edit</button>
-                                    <button className="btn btn-sm btn-danger" onClick={() => handleDeleteUser(user.id)}>Delete</button>
+                                    
                                   </td>
                                 </tr>
                               ))}

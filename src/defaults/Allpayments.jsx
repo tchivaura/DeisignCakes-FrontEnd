@@ -13,6 +13,9 @@ const AllPayments = () => {
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
   useEffect(() => {
     fetchAllData();
   }, []);
@@ -21,9 +24,13 @@ const AllPayments = () => {
     applyFilters();
   }, [payments, searchCustomer, selectedPaymentType, fromDate, toDate]);
 
+  useEffect(() => {
+    setCurrentPage(1); // reset to page 1 when filters change
+  }, [filteredPayments]);
+
   const fetchAllData = async () => {
     const [paymentsRes, paymentTypesRes, ordersRes, customersRes] = await Promise.all([
-      axiosInstance.get('/payments'),
+      axiosInstance.get('Payments/bydescription/order'),
       axiosInstance.get('/paymenttypes'),
       axiosInstance.get('/orders'),
       axiosInstance.get('/customers'),
@@ -35,14 +42,14 @@ const AllPayments = () => {
   };
 
   const getPaymentTypeName = (typeId) => {
-    const type = paymentTypes.find((t) => t.id === typeId);
+    const type = paymentTypes.find((t) => t.id == typeId);
     return type ? type.name : 'Unknown';
   };
 
   const getCustomerByOrderId = (orderId) => {
-    const order = orders.find((o) => o.id === orderId);
+    const order = orders.find((o) => o.id == orderId);
     if (!order) return null;
-    return customers.find((c) => c.id === order.customerId);
+    return customers.find((c) => c.id === order.customerid);
   };
 
   const applyFilters = () => {
@@ -78,6 +85,15 @@ const AllPayments = () => {
     setToDate('');
   };
 
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = filteredPayments.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(filteredPayments.length / itemsPerPage);
+
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+  };
+
   return (
     <div className="pcoded-main-container">
       <div className="pcoded-wrapper">
@@ -87,7 +103,7 @@ const AllPayments = () => {
               <div className="page-wrapper"></div>
 
               <div className="mb-3">
-                <h5>Payments</h5>
+                <h5>Customer Payments</h5>
               </div>
               <div className="card mb-4">
                 <div className="card-body">
@@ -149,45 +165,46 @@ const AllPayments = () => {
                   <table className="table table-bordered">
                     <thead className="thead-light">
                       <tr>
-                      <th>Order ID</th>
-                      <th>Date</th>
-                      <th>Customer</th>
-                      <th>Payment Type</th>
-                      <th>Amount</th>
-                      <th>Operator</th>
-                        
-                        
-                        
+                        <th>Order ID</th>
+                        <th>Date</th>
+                        <th>Customer</th>
+                        <th>Payment Type</th>
+                        <th>Amount</th>
+                        <th>Operator</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {filteredPayments.map((payment) => {
+                      {currentItems.map((payment) => {
                         const customer = getCustomerByOrderId(payment.orderid);
                         return (
                           <tr key={payment.id}>
                             <td>{payment.orderid}</td>
                             <td>{payment.date}</td>
-                            <td>
-                              {customer
-                                ? `${customer.firstName} ${customer.surname}`
-                                : 'Unknown'}
-                            </td>
+                            <td>{customer ? `${customer.firstName} ${customer.surname}` : 'Unknown'}</td>
                             <td>{getPaymentTypeName(payment.paymenttype)}</td>
-                            <td style={{"text-align" :"right"}}>${payment.amount}</td>
+                            <td style={{ textAlign: "right" }}>${payment.amount}</td>
                             <td>{payment.clerk}</td>
-                            
-                            
-                            
                           </tr>
                         );
                       })}
                     </tbody>
                   </table>
 
-                  <div className="mt-3" style={{"padding" :"16px","margin-left":"1100px"}}>
+                  <div className="d-flex justify-content-between align-items-center mt-3">
                     <h5>
                       Total Amount: ${filteredPayments.reduce((sum, payment) => sum + Number(payment.amount || 0), 0).toFixed(2)}
                     </h5>
+                    <div>
+                      {Array.from({ length: totalPages }, (_, index) => index + 1).map((page) => (
+                        <button
+                          key={page}
+                          className={`btn btn-sm mx-1 ${currentPage === page ? 'btn-primary' : 'btn-outline-primary'}`}
+                          onClick={() => handlePageChange(page)}
+                        >
+                          {page}
+                        </button>
+                      ))}
+                    </div>
                   </div>
 
                 </div>

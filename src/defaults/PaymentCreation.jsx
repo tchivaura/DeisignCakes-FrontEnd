@@ -18,7 +18,7 @@ function PaymentCreation() {
     axiosInstance.get("/orders")
       .then((res) => {
         const filteredByStatus = res.data.filter(order =>
-          order.orderstatus === 'Pending' || order.orderstatus === 'Partially Billed'
+          order.orderstatus === 'Pending' || order.orderstatus === 'Partially Paid'
         );
         setOrders(filteredByStatus);
       })
@@ -41,11 +41,12 @@ function PaymentCreation() {
     const search = searchTerm.toLowerCase();
     if (search.length > 0) {
       const filtered = orders.filter(order => {
-        const customer = customers.find(c => c.id === order.customerId || c.id === Number(order.customerId));
+        const customer = customers.find(c => c.id === order.customerid || c.id === Number(order.customerid));
         const product = products.find(p => p.id === order.orderproduct || p.id === Number(order.orderproduct));
 
         const customerName = customer ? `${customer.firstName} ${customer.surname}`.toLowerCase() : '';
-        const productName = product ? product.ProductName.toLowerCase() : '';
+        
+        const productName = product ? product.productName.toLowerCase() : '';
 
         return customerName.includes(search) || productName.includes(search);
       });
@@ -56,8 +57,9 @@ function PaymentCreation() {
   }, [searchTerm, orders, customers, products]);
 
   const handleSelect = (order) => {
-    const customer = customers.find(c => c.id === order.customerId || c.id === Number(order.customerId));
-    const product = products.find(p => p.id === order.orderproduct || p.id === Number(order.orderproduct));
+    const customer = customers.find(c => c.id === order.customerid || c.id === Number(order.customerid));
+      const product = products.find(p => p.id === order.orderproduct || p.id === Number(order.orderproduct));
+
     setSelectedOrder({ ...order, customer, product });
     setSearchTerm(customer ? `${customer.firstName} ${customer.surname}` : '');
     setFilteredOrders([]);
@@ -106,7 +108,7 @@ function PaymentCreation() {
                     {filteredOrders.length > 0 && (
                       <ul className="list-group position-absolute w-100" style={{ zIndex: 1000 }}>
                         {filteredOrders.map(order => {
-                          const customer = customers.find(c => c.id === order.customerId || c.id === Number(order.customerId));
+                          const customer = customers.find(c => c.id === order.customerid || c.id === Number(order.customerid));
                           const product = products.find(p => p.id === order.orderproduct || p.id === Number(order.orderproduct));
                           const sizeName = getSizeName(order.size);
 
@@ -119,7 +121,7 @@ function PaymentCreation() {
                             >
                               {customer ? `${customer.firstName} ${customer.surname}` : "Unknown Customer"} |
                               Order ID: {order.id} |
-                              Product: {product ? product.ProductName : "Unknown Product"} |
+                              Product: {product ? product.productName : "Unknown Product"} |
                               Size: {sizeName}
                             </li>
                           );
@@ -136,6 +138,7 @@ function PaymentCreation() {
                     ProductSize={getSizeName(selectedOrder.size)}
                   />
                 )}
+                
 
               </div>
             </div>

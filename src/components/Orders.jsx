@@ -3,22 +3,24 @@ import axiosInstance from '../api/axios';
 
 function Orders() {
   const [orders, setOrders] = useState([]);
+   const today = new Date().toLocaleDateString('en-CA');
+
 
   useEffect(() => {
     fetchOrders();
-  }, []);
+  }, [today]);
 
   const fetchOrders = async () => {
     try {
-      const response = await axiosInstance.get('/orders');
+      const response = await axiosInstance.get(`/orders/date/${new Date().toLocaleDateString('en-CA')}`);
       setOrders(response.data);
     } catch (error) {
       console.error('Error fetching orders:', error);
     }
   };
 
-  const today = new Date().toLocaleDateString('en-CA');
-
+ 
+  
   const todayOrders = orders.filter(order => order.orderdate.startsWith(today));
 
   const totalOrders = todayOrders.length;

@@ -1,124 +1,125 @@
 import React from 'react';
+import { NavLink } from 'react-router-dom';
 
 function SideNav({ role }) {
+  const getLinkClass = ({ isActive }) =>
+    `nav-link ${isActive ? 'active' : ''}`;
+
   return (
-    <nav className="pcoded-navbar menupos-fixed menu-light brand-blue">
-      <div className="navbar-wrapper">
-        <div className="">
-          <a href="index.html" className="b-brand">
-            <img src="/assests/images/designlogo_optimized.png" alt="" className="logo images"  />
-            {/* <img src="/assests/images/designss_50.jpg" alt="" className="logo images"  /> */}
-           
-          </a>
-          
+    <nav className="pcoded-navbar menupos-fixed menu-light brand-blue" style={{ height: '100vh', overflow: 'hidden' }}>
+      <div className="navbar-wrapper" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+        <div className="logo-container" style={{ flex: '0 0 auto', padding: '10px' }}>
+          <div className="logo-container" style={{ height: '44px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+  <NavLink to="/dashboard" className="b-brand" style={{ textDecoration: 'none' }}>
+    <h3 style={{ margin: 0, fontWeight: 'bold', fontStyle: 'italic', color: '#ff4081' }}>
+      DESIGN CAKES
+    </h3>
+  </NavLink>
+</div>
+
+
         </div>
-        <div className="navbar-content scroll-div">
+        <div
+          className="navbar-content scroll-div"
+          style={{
+            flex: '1 1 auto',
+            overflowY: 'auto',
+            paddingRight: '5px',
+          }}
+        >
           <ul className="nav pcoded-inner-navbar">
-            {/* Basic Navigation */}
             <li className="nav-item pcoded-menu-caption">
               <label>Navigation</label>
             </li>
             <li className="nav-item">
-              <a href="/dashboard" className="nav-link">
-                <span className="pcoded-micon">
-                  <i className="feather icon-home" />
-                </span>
+              <NavLink to="/dashboard" className={getLinkClass}>
+                <span className="pcoded-micon"><i className="feather icon-home" /></span>
                 <span className="pcoded-mtext">Dashboard</span>
-              </a>
+              </NavLink>
             </li>
 
-            {/* Orders Management */}
             <li className="nav-item pcoded-menu-caption">
               <label>Orders Management</label>
             </li>
             <li className="nav-item">
-              <a href="/ordercreation" className="nav-link">
-                <span className="pcoded-micon">
-                  <i className="feather icon-book" />
-                </span>
+              <NavLink to="/ordercreation" className={getLinkClass}>
+                <span className="pcoded-micon"><i className="feather icon-shopping-cart" /></span>
                 <span className="pcoded-mtext">New Order</span>
-              </a>
+              </NavLink>
             </li>
             <li className="nav-item">
-              <a href="/allorders" className="nav-link">
-                <span className="pcoded-micon">
-                  <i className="feather icon-folder" />
-                </span>
+              <NavLink to="/allorders" className={getLinkClass}>
+                <span className="pcoded-micon"><i className="feather icon-folder" /></span>
                 <span className="pcoded-mtext">All Orders</span>
-              </a>
+              </NavLink>
             </li>
 
-            {/* Finance */}
             <li className="nav-item pcoded-menu-caption">
               <label>Finance</label>
             </li>
             <li className="nav-item">
-              <a href="/paymentcreation" className="nav-link">
-                <span className="pcoded-micon">
-                  <i className="feather icon-credit-card" />
-                </span>
-                <span className="pcoded-mtext">Add Payment</span>
-              </a>
+              <NavLink to="/paymentcreation" className={getLinkClass}>
+                <span className="pcoded-micon"><i className="feather icon-credit-card" /></span>
+                <span className="pcoded-mtext">Add Customer Payment</span>
+              </NavLink>
             </li>
             <li className="nav-item">
-              <a href="/allpayments" className="nav-link">
-                <span className="pcoded-micon">
-                  <i className="feather icon-alert-triangle" />
-                </span>
-                <span className="pcoded-mtext">All Payments</span>
-              </a>
+              <NavLink to="/allpayments" className={getLinkClass}>
+                <span className="pcoded-micon"><i className="feather icon-folder" /></span>
+                <span className="pcoded-mtext">All Customers Payments</span>
+              </NavLink>
+            </li>
+            <li className="nav-item">
+              <NavLink to="/expenses" className={getLinkClass}>
+                <span className="pcoded-micon"><i className="feather icon-file-minus" /></span>
+                <span className="pcoded-mtext">Expenses</span>
+              </NavLink>
+            </li>
+            <li className="nav-item">
+              <NavLink to="/alltransactions" className={getLinkClass}>
+                <span className="pcoded-micon"><i className="feather icon-layers" /></span>
+                <span className="pcoded-mtext">All Transactions</span>
+              </NavLink>
             </li>
 
-            {/* Customer Management */}
             <li className="nav-item pcoded-menu-caption">
               <label>Customer Management</label>
             </li>
             <li className="nav-item">
-              <a href="/customers" className="nav-link">
-                <span className="pcoded-micon">
-                  <i className="feather icon-briefcase" />
-                </span>
+              <NavLink to="/customers" className={getLinkClass}>
+                <span className="pcoded-micon"><i className="feather icon-briefcase" /></span>
                 <span className="pcoded-mtext">Customers</span>
-              </a>
+              </NavLink>
             </li>
             <li className="nav-item">
-              <a href="/complains" className="nav-link">
-                <span className="pcoded-micon">
-                  <i className="feather icon-alert-octagon" />
-                </span>
+              <NavLink to="/complains" className={getLinkClass}>
+                <span className="pcoded-micon"><i className="feather icon-alert-octagon" /></span>
                 <span className="pcoded-mtext">Complains</span>
-              </a>
+              </NavLink>
             </li>
 
-            {/* System Admin Section */}
             {role === "Admin" && (
               <>
                 <li className="nav-item pcoded-menu-caption">
                   <label>System Administration</label>
                 </li>
                 <li className="nav-item">
-                  <a href="/users" className="nav-link">
-                    <span className="pcoded-micon">
-                      <i className="feather icon-users" />
-                    </span>
+                  <NavLink to="/users" className={getLinkClass}>
+                    <span className="pcoded-micon"><i className="feather icon-users" /></span>
                     <span className="pcoded-mtext">Users</span>
-                  </a>
+                  </NavLink>
                 </li>
                 <li className="nav-item">
-                  <a href="/productsprice" className="nav-link">
-                    <span className="pcoded-micon">
-                      <i className="feather icon-package" />
-                    </span>
-                    <span className="pcoded-mtext">Pricing</span>
-                  </a>
+                  <NavLink to="/products" className={getLinkClass}>
+                    <span className="pcoded-micon"><i className="feather icon-package" /></span>
+                    <span className="pcoded-mtext">Products</span>
+                  </NavLink>
                 </li>
                 <li className="nav-item">
-                  <a href="/paymenttypes" className="nav-link">
-                    <span className="pcoded-micon">
-                      <i className="feather icon-credit-card" />
-                    </span>
+                  <NavLink to="/paymenttypes" className={getLinkClass}>
+                    <span className="pcoded-micon"><i className="feather icon-credit-card" /></span>
                     <span className="pcoded-mtext">Payment Types</span>
-                  </a>
+                  </NavLink>
                 </li>
               </>
             )}

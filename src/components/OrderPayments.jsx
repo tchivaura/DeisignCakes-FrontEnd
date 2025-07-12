@@ -12,7 +12,8 @@ function OrderPayments({ orderId, orderPrice, orderQuantity }) {
     amount: '',
     date: new Date().toISOString().slice(0, 10),
     orderid: orderId,
-    clerk : window.localStorage.getItem("username")
+    clerk : window.localStorage.getItem("username"),
+    description:"order"
   });
 
   const totalPrice = parseFloat(orderPrice) * parseInt(orderQuantity);
@@ -23,7 +24,7 @@ function OrderPayments({ orderId, orderPrice, orderQuantity }) {
   }, [orderId]);
 
   const fetchPayments = () => {
-    axiosInstance.get(`/payments?orderid=${orderId}`)
+    axiosInstance.get(`/payments/${orderId}`)
       .then((res) => setPayments(res.data));
   };
 
@@ -34,6 +35,7 @@ function OrderPayments({ orderId, orderPrice, orderQuantity }) {
 
   const updateOrderStatus = (totalPaid) => {
     const newStatus = totalPaid >= totalPrice ? 'Billed' : totalPaid > 0 ? 'Partially Paid' : 'Pending';
+   
     axiosInstance.patch(`/orders/${orderId}`, { orderstatus: newStatus });
   };
 
@@ -43,6 +45,7 @@ function OrderPayments({ orderId, orderPrice, orderQuantity }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    form.description="order"
     const amount = parseFloat(form.amount);
     const totalPaidSoFar = payments.reduce((sum, p) => sum + parseFloat(p.amount), 0);
 
@@ -84,6 +87,7 @@ function OrderPayments({ orderId, orderPrice, orderQuantity }) {
     } else {
       axiosInstance.post(`/payments`, form)
         .then(() => {
+          console.log(form)
           toast.success("Payment added");
           resetForm();
           fetchPayments();
@@ -117,7 +121,8 @@ function OrderPayments({ orderId, orderPrice, orderQuantity }) {
       amount: '',
       date: new Date().toISOString().slice(0, 10),
       orderid: orderId,
-      clerk : window.localStorage.getItem("username")
+      clerk : window.localStorage.getItem("username"),
+      description:""
       
     });
   };
@@ -167,7 +172,8 @@ function OrderPayments({ orderId, orderPrice, orderQuantity }) {
                 payments.map((payment, index) => (
                   <tr key={payment.id}>
                     <td>{index + 1}</td>
-                    <td>{paymentTypes.find((pt) => pt.id === payment.paymenttype)?.name || 'Unknown'}</td>
+                    <td>{paymentTypes.find((pt) => pt.id == payment.paymenttype)?.name || 'Unknown'}</td>
+                    
                     <td>${parseFloat(payment.amount).toFixed(2)}</td>
                     <td>{new Date(payment.date).toLocaleDateString()}</td>
                     <td>{payment.clerk}</td>
@@ -211,6 +217,7 @@ function OrderPayments({ orderId, orderPrice, orderQuantity }) {
                   name="paymenttype"
                   value={form.paymenttype}
                   onChange={handleChange}
+                 
                 >
                   <option value="">-- Select Payment Type --</option>
                   {paymentTypes.map((type) => (

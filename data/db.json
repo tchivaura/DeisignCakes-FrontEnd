@@ -31,7 +31,7 @@
       "base": "Old Mutual",
       "gender": "Male",
       "dob": "2025-04-18",
-      "label": "New"
+      "label": "Bad"
     },
     {
       "id": "fef6c1aa-cabf-43c4-9d22-10c25666e7c3",
@@ -42,28 +42,6 @@
       "base": "Old Mutual",
       "gender": "Male",
       "dob": "2025-04-01",
-      "label": "New"
-    },
-    {
-      "id": "74010bf4-c220-47e1-a461-4094d13351ef",
-      "firstName": "Tinash",
-      "surname": "Chivaura",
-      "address": "2772 Bluffhill Westgate",
-      "telephone": "0771168282",
-      "base": "Old Mutual",
-      "gender": "Male",
-      "dob": "2025-04-02",
-      "label": "Existing"
-    },
-    {
-      "id": "ef46ac72-e0b2-49d4-ae47-a1bd9abc9931",
-      "firstName": "Takuu",
-      "surname": "Chivaura",
-      "address": "2772 Bluffhill Westgate",
-      "telephone": "0771168282",
-      "base": "Old Mutual",
-      "gender": "Male",
-      "dob": "2025-01-15",
       "label": "New"
     },
     {
@@ -83,6 +61,17 @@
       "address": "2772 Bluffhill Westgate",
       "gender": "Female",
       "dob": "1990-01-10",
+      "label": "New"
+    },
+    {
+      "id": "b9b0",
+      "firstName": "Takundq",
+      "surname": "Chimuti",
+      "telephone": "0771168282",
+      "base": "Old Muitual",
+      "address": "1802 Finch  Rd Harare",
+      "gender": "Male",
+      "dob": "1976-06-12",
       "label": "New"
     }
   ],
@@ -114,6 +103,20 @@
       "relationship": "Brother",
       "contact": "0771168282",
       "customerId": "5136"
+    },
+    {
+      "id": "2212",
+      "fullName": "Tapiwa Chimuti",
+      "relationship": "Brother",
+      "contact": "07711682824",
+      "customerId": "b9b0"
+    },
+    {
+      "id": "9b55",
+      "fullName": "Tatenda Chibinfi",
+      "relationship": "Brother",
+      "contact": "0771168282",
+      "customerId": "231f"
     }
   ],
   "labels": [
@@ -291,11 +294,24 @@
       "size": "1",
       "orderperson": "4aac",
       "price": "20",
-      "quantity": "1",
-      "extrainstructions": "",
+      "quantity": "3",
+      "extrainstructions": "less sugar",
       "customerId": "b397",
-      "orderstatus": "Pending",
+      "orderstatus": "Billed",
       "clerk": "TestUser"
+    },
+    {
+      "id": "be13",
+      "orderdate": "2025-05-13T20:30",
+      "orderproduct": "1",
+      "size": "1",
+      "orderperson": "self",
+      "price": "20",
+      "quantity": "2",
+      "extrainstructions": "less",
+      "customerId": "b9b0",
+      "orderstatus": "Billed",
+      "clerk": "TinTin"
     }
   ],
   "users": [
@@ -314,6 +330,14 @@
       "userName": "TestUser",
       "password": "224490Hi",
       "Role": "User"
+    },
+    {
+      "id": "e634",
+      "firstName": "TestAdmin",
+      "lastName": "TestAdmin",
+      "userName": "TestAdmin",
+      "password": "224490Hi",
+      "Role": "Admin"
     }
   ],
   "payments": [
@@ -360,6 +384,22 @@
       "date": "2025-05-09",
       "orderid": "7ccf",
       "clerk": "TestUser"
+    },
+    {
+      "id": "7b11",
+      "paymenttype": "3",
+      "amount": "40",
+      "date": "2025-05-12",
+      "orderid": "be13",
+      "clerk": "TinTin"
+    },
+    {
+      "id": "c2b2",
+      "paymenttype": "1",
+      "amount": "60",
+      "date": "2025-05-13",
+      "orderid": "6cfe",
+      "clerk": "TinTin"
     }
   ],
   "paymenttypes": [

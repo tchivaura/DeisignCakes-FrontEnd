@@ -3,40 +3,25 @@ import { toast, ToastContainer } from 'react-toastify';
 import axiosInstance from '../api/axios';
 import 'react-toastify/dist/ReactToastify.css';
 
-
 function Products() {
   const [products, setProducts] = useState([]);
-  const [filteredProducts, setFilteredProducts] = useState([]);
-  const [productsizes, setProductSizes] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [editProductId, setEditProductId] = useState(null);
-  const [newProduct, setNewProduct] = useState({ ProductName: "", Size: "", Prize: "" });
-  const [searchTerm, setSearchTerm] = useState("");
+  const [newProduct, setNewProduct] = useState({ ProductName: "" });
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
 
   useEffect(() => {
     fetchAllProducts();
-    fetchAllProductSizes();
   }, []);
-
-  useEffect(() => {
-    const filtered = products.filter(product =>
-      product.ProductName.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-    setFilteredProducts(filtered);
-    setCurrentPage(1);
-  }, [searchTerm, products]);
 
   const fetchAllProducts = () => {
     axiosInstance.get('/Products')
-      .then(res => setProducts(res.data))
-      .catch(err => console.log(err));
-  };
-
-  const fetchAllProductSizes = () => {
-    axiosInstance.get('/ProductSizes')
-      .then(res => setProductSizes(res.data))
+      .then(res =>
+      
+         
+         setProducts(res.data)
+  )
       .catch(err => console.log(err));
   };
 
@@ -46,37 +31,25 @@ function Products() {
   };
 
   const handleSaveProduct = () => {
-    const trimmedName = newProduct.ProductName.trim().toLowerCase();
-    const selectedSize = newProduct.Size;
-  
-    if (!trimmedName) {
+    const name = newProduct.ProductName;
+
+    if (!name) {
       toast.error("Product name is required.");
       return;
     }
-  
-    if (!selectedSize) {
-      toast.error("Product size is required.");
-      return;
-    }
-  
-    if (!newProduct.Prize) {
-      toast.error("Price is required.");
-      return;
-    }
-  
+
     const isDuplicate = products.some(p =>
-      p.ProductName.trim().toLowerCase() === trimmedName &&
-      p.Size.toString() === selectedSize.toString() &&
+      p.ProductName === name &&
       (!editProductId || p.id !== editProductId)
     );
-  
+
     if (isDuplicate) {
-      toast.error("A product with the same name and size already exists.");
+      toast.error("A product with the same name already exists.");
       return;
     }
-  
+
     if (editProductId) {
-      axiosInstance.put(`/Products/${editProductId}`, newProduct)
+      axiosInstance.put(`/Products/${editProductId}`, { ProductName: name })
         .then(() => {
           fetchAllProducts();
           toast.success("Product updated successfully!");
@@ -84,7 +57,7 @@ function Products() {
         })
         .catch(() => toast.error("Failed to update product."));
     } else {
-      axiosInstance.post('/Products', newProduct)
+      axiosInstance.post('/Products', { ProductName: name })
         .then(() => {
           fetchAllProducts();
           toast.success("Product added successfully!");
@@ -93,10 +66,10 @@ function Products() {
         .catch(() => toast.error("Failed to add product."));
     }
   };
-  
+
   const handleEditProduct = (product) => {
     setEditProductId(product.id);
-    setNewProduct({ ProductName: product.ProductName, Size: product.Size, Prize: product.Prize });
+    setNewProduct({ ProductName: product.ProductName });
     setShowModal(true);
   };
 
@@ -106,18 +79,19 @@ function Products() {
         .then(() => {
           fetchAllProducts();
           toast.success("Product deleted!");
-        });
+        })
+        .catch(() => toast.error("Failed to delete product."));
     }
   };
 
   const resetForm = () => {
-    setNewProduct({ ProductName: "", Size: "", Prize: "" });
+    setNewProduct({ ProductName: "" });
     setEditProductId(null);
     setShowModal(false);
   };
 
-  const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
-  const displayedProducts = filteredProducts.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  const totalPages = Math.ceil(products.length / itemsPerPage);
+  const displayedProducts = products.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   return (
     <div className="pcoded-main-container">
@@ -127,51 +101,34 @@ function Products() {
           <div className="pcoded-inner-content">
             <div className="main-body">
               <div className="page-wrapper">
-              <div className="row">
-                  <div className="col-md-4 position-relative">
-                    <label htmlFor="order-search-input" className="form-label">Search Product</label>
-                    <input
-                      type="text"
-                      placeholder="Search by Product Name"
-                      className="form-control mb-3"
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                    />
-                    </div>
-                    </div>
                 <div className="card">
                   <div className="card-header d-flex justify-content-between">
                     <h5>Products</h5>
                     <button className="btn btn-primary" onClick={() => {
                       setEditProductId(null);
-                      setNewProduct({ ProductName: "", Size: "", Prize: "" });
+                      setNewProduct({ ProductName: "" });
                       setShowModal(true);
                     }}>
                       Add Product
                     </button>
                   </div>
                   <div className="card-body">
-                    
                     <table className="table table-striped">
                       <thead>
                         <tr>
                           <th>#</th>
                           <th>Product Name</th>
-                          <th>Product Size</th>
-                          <th>Price</th>
-                          <th>Actions</th>
+                          {/* <th>Actions</th> */}
                         </tr>
                       </thead>
                       <tbody>
                         {displayedProducts.map((product, index) => (
                           <tr key={product.id}>
                             <td>{(currentPage - 1) * itemsPerPage + index + 1}</td>
-                            <td>{product.ProductName}</td>
-                            <td>{productsizes.find(size => size.id === product.Size)?.size || 'Unknown'}</td>
-                            <td>{product.Prize}</td>
+                            <td>{product.productName}</td>
                             <td>
-                              <button className="btn btn-sm btn-warning me-2" onClick={() => handleEditProduct(product)}>Edit</button>
-                              <button className="btn btn-sm btn-danger" onClick={() => handleDeleteProduct(product.id)}>Delete</button>
+                              {/* <button className="btn btn-sm btn-warning me-2" onClick={() => handleEditProduct(product)}>Edit</button>
+                              <button className="btn btn-sm btn-danger" onClick={() => handleDeleteProduct(product.id)}>Delete</button> */}
                             </td>
                           </tr>
                         ))}
@@ -213,32 +170,6 @@ function Products() {
                               className="form-control"
                               onChange={handleProductChange}
                               value={newProduct.ProductName}
-                            />
-                          </div>
-                          <div className="form-group mb-2">
-                            <label>Product Size</label>
-                            <select
-                              name="Size"
-                              className="form-control"
-                              onChange={handleProductChange}
-                              value={newProduct.Size}
-                            >
-                              <option value="">Select Size</option>
-                              {productsizes.map((productsize) => (
-                                <option key={productsize.id} value={productsize.id}>
-                                  {productsize.size}
-                                </option>
-                              ))}
-                            </select>
-                          </div>
-                          <div className="form-group mb-2">
-                            <label>Price</label>
-                            <input
-                              type="number"
-                              className="form-control"
-                              name="Prize"
-                              onChange={handleProductChange}
-                              value={newProduct.Prize}
                             />
                           </div>
                         </div>

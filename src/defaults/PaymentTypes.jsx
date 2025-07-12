@@ -99,7 +99,7 @@ function PaymentTypes() {
               <tr>
                 <th>#</th>
                 <th>Name</th>
-                <th>Actions</th>
+                {/* <th>Actions</th> */}
               </tr>
             </thead>
             <tbody>
@@ -107,10 +107,10 @@ function PaymentTypes() {
                 <tr key={pt.id}>
                   <td>{index + 1}</td>
                   <td>{pt.name}</td>
-                  <td>
+                  {/* <td>
                     <button className="btn btn-sm btn-warning me-2" onClick={() => handleEdit(pt)}>Edit</button>
                     <button className="btn btn-sm btn-danger" onClick={() => handleDelete(pt.id)}>Delete</button>
-                  </td>
+                  </td> */}
                 </tr>
               ))}
             </tbody>

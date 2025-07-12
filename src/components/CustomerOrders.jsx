@@ -12,12 +12,13 @@ function CustomerOrders({ customer }) {
     orderdate: '',
     orderproduct: '',
     size: '',
-    orderperson: 'self',
+    orderperson: 1,
     price: '',
     quantity: '',
     extrainstructions: '',
     customerId: customer.id,
     orderstatus: 'Pending',
+    onClick:'',
     clerk : window.localStorage.getItem("username")
   });
   const [editMode, setEditMode] = useState(false);
@@ -29,8 +30,17 @@ function CustomerOrders({ customer }) {
   const [complaintData, setComplaintData] = useState({
   customerId: '',
   orderId: '',
-  complaint: ''
+  complaint: '',
+  date:new Date().toISOString().split('T')[0]
+
 });
+const[LovedOneDetails,setLovedOneDetails]= useState({
+   FullName:'',
+   Relationship:'',
+   DOB :'',
+   Contact:'',
+   gengder:''
+})
 
   const ordersPerPage = 5;
 
@@ -40,42 +50,62 @@ function CustomerOrders({ customer }) {
 
   const fetchData = () => {
     axiosInstance.get(`/Products`).then((res) => setProducts(res.data));
-    axiosInstance.get(`/lovedOnes?customerId=${customer.id}`).then((res) => setLovedOnes(res.data));
+    axiosInstance.get(`/lovedOnes/${customer.id}`).then((res) => setLovedOnes(res.data));
     axiosInstance.get(`/ProductSizes`).then((res) => setProductSizes(res.data));
-    axiosInstance.get(`/orders?customerId=${customer.id}`).then((res) => setCustomerOrders(res.data));
+    axiosInstance.get(`/orders/bycustomer/${customer.id}`).then((res) => setCustomerOrders(res.data));
     axiosInstance.get(`/ProductPrices`).then((res) => setProductPrices(res.data));
   };
 
   const handleOrderChange = (e) => {
     const { name, value } = e.target;
     const updatedForm = { ...OrderForm, [name]: value };
-    if ((name === "orderproduct" || name === "size") && updatedForm.orderproduct && updatedForm.size) {
-      const match = ProductPrices.find(
-        (p) => String(p.ProductId) === String(updatedForm.orderproduct) && String(p.SizeId) === String(updatedForm.size)
-      );
-      updatedForm.price = match ? match.Price : '';
-    }
+    
     setOrderForm(updatedForm);
   };
 
-  const handleCustomerSubmit = (e) => {
-    e.preventDefault();
-    if (editMode) {
-      axiosInstance.put(`/orders/${editId}`, OrderForm).then(() => {
-        toast.success('Order Updated');
-        resetForm();
-        setEditMode(false);
-        setEditId(null);
-        fetchData();
-      });
-    } else {
-      axiosInstance.post(`/orders`, OrderForm).then(() => {
-        toast.success('Order Added');
-        resetForm();
-        fetchData();
-      });
+  const handleCustomerSubmit = async (e) => {
+  e.preventDefault();
+  let finalOrderForm = { ...OrderForm };
+
+  if (OrderForm.orderperson === 'other') {
+    const newLovedOne = {
+      fullName: LovedOneDetails.FullName,
+      relationship: LovedOneDetails.Relationship,
+      customerId: customer.id,
+      dob: LovedOneDetails.DOB,
+      gender:LovedOneDetails.gender
+    };
+
+    try {
+      const response = await axiosInstance.post('/LovedOnes', newLovedOne); // 
+      const createdLovedOne = response.data;
+      finalOrderForm.orderperson = createdLovedOne.id; // 
+    } catch (error) {
+      toast.error('Failed to create loved one');
+      console.error('Error creating loved one:', error);
+      return; // Stop submission if error
     }
-  };
+  }
+
+  try {
+    if (editMode) {
+      await axiosInstance.put(`/orders/${editId}`, finalOrderForm);
+      toast.success('Order Updated');
+    } else {
+      await axiosInstance.post(`/orders`, finalOrderForm);
+      toast.success('Order Added');
+    }
+    resetForm();
+    setEditMode(false);
+    setEditId(null);
+    resetLovedOneForm();
+    fetchData();
+  } catch (error) {
+    toast.error('Failed to save order');
+    console.error(error);
+  }
+};
+
 
   const handleEdit = (order) => {
     setOrderForm(order);
@@ -97,20 +127,31 @@ function CustomerOrders({ customer }) {
       orderdate: '',
       orderproduct: '',
       size: '',
-      orderperson: 'self',
+      orderperson: 1,
       price: '',
       quantity: '',
       extrainstructions: '',
       customerId: customer.id,
       orderstatus: 'Pending',
+      occasion:'',
       clerk : window.localStorage.getItem("username")
     });
   };
+  const resetLovedOneForm=()=>{
+    setLovedOneDetails({
+      FullName:'',
+   Relationship:'',
+   DOB :'',
+   Contact:'111',
+   gender:''
+    })
+  }
   const handleComplaintClick = (order) => {
     setComplaintData({
-      customerId: order.customerId,
+      customerId: order.customerid,
       orderId: order.id,
-      complaint: ''
+      complaint: '',
+       date: formatDate(order.orderdate)
     });
     setShowComplaintModal(true);
   };
@@ -120,10 +161,12 @@ function CustomerOrders({ customer }) {
   };
 
   const handleSubmitComplaint = async () => {
+    console.log(complaintData);
     try {
       await axiosInstance.post('/complaints', complaintData);
-      toast.success('Complaint submitted successfully!');
       setShowComplaintModal(false);
+      toast.success('Complaint submitted successfully!');
+      
     } catch (error) {
       toast.error('Failed to submit complaint');
       console.error(error);
@@ -145,7 +188,7 @@ function CustomerOrders({ customer }) {
 
   const filteredOrders = CustomerOrders.filter((order) => {
     const product = Products.find((p) => p.id == order.orderproduct);
-    const productName = product ? product.ProductName : '';
+    const productName = product ? product.productName : '';
     return (
       (!statusFilter || order.orderstatus === statusFilter) &&
       (!productFilter || productName.toLowerCase().includes(productFilter.toLowerCase()))
@@ -210,6 +253,7 @@ function CustomerOrders({ customer }) {
                   <th>Quantity</th>
                   <th>Person</th>
                   <th>Instructions</th>
+                  <th>Occasion</th>
                   <th>Price</th>
                   <th>Status</th>
                   <th>Operator</th>
@@ -222,11 +266,17 @@ function CustomerOrders({ customer }) {
                   <tr key={order.id}>
                     <td>{order.id}</td>
                     <td>{formatDate(order.orderdate)}</td>
-                    <td>{Products.find((p) => p.id == order.orderproduct)?.ProductName}</td>
+                    <td>{Products.find((p) => p.id == order.orderproduct)?.productName}</td>
                     <td>{ProductSizes.find((s) => s.id == order.size)?.size}</td>
                     <td>{order.quantity}</td>
-                    <td>{order.orderperson === 'self' ? 'Self' : LovedOnes.find((l) => l.id == order.orderperson)?.fullName}</td>
+                    <td>
+  {Number(order.orderperson) === 1
+    ? 'Self'
+    : LovedOnes.find((l) => Number(l.id) === Number(order.orderperson))?.fullName || 'Other'}
+</td>
+
                     <td>{order.extrainstructions}</td>
+                    <td>{order.occasion}</td>
                     <td>{order.price}</td>
                     <td>{order.orderstatus}</td>
                     <td>{order.clerk}</td>
@@ -275,75 +325,264 @@ function CustomerOrders({ customer }) {
       </div>
 
       {/* MODAL FORM */}
-      <div className="modal fade" id="orderModal" tabIndex="-1" aria-labelledby="orderModalLabel" aria-hidden="true">
-        <div className="modal-dialog modal-lg modal-dialog-scrollable">
-          <div className="modal-content">
-            <form onSubmit={handleCustomerSubmit}>
-              <div className="modal-header">
-                <h5 className="modal-title">{editMode ? 'Edit Order' : 'Add Order'}</h5>
-              </div>
-              <div className="modal-body">
-                <div className="row">
-                  <div className="col-md-4 mb-3">
-                    <label className="form-label">Order Date</label>
-                    <input type="datetime-local" className="form-control" name="orderdate"
-                      value={OrderForm.orderdate} onChange={handleOrderChange} required />
-                  </div>
-                  <div className="col-md-4 mb-3">
-                    <label className="form-label">Product</label>
-                    <select className="form-control" name="orderproduct" value={OrderForm.orderproduct}
-                      onChange={handleOrderChange} required>
-                      <option value="">Select</option>
-                      {Products.map((product) => (
-                        <option key={product.id} value={product.id}>{product.ProductName}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="col-md-4 mb-3">
-                    <label className="form-label">Size</label>
-                    <select className="form-control" name="size" value={OrderForm.size}
-                      onChange={handleOrderChange} required>
-                      <option value="">Select</option>
-                      {ProductSizes.map((size) => (
-                        <option key={size.id} value={size.id}>{size.size}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="col-md-4 mb-3">
-                    <label className="form-label">Order Person</label>
-                    <select className="form-control" name="orderperson" value={OrderForm.orderperson}
-                      onChange={handleOrderChange} required>
-                      <option value="self">Self</option>
-                      {LovedOnes.map((lovedOne) => (
-                        <option key={lovedOne.id} value={lovedOne.id}>{lovedOne.fullName}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="col-md-4 mb-3">
-                    <label className="form-label">Quantity</label>
-                    <input type="number" className="form-control" name="quantity"
-                      value={OrderForm.quantity} onChange={handleOrderChange} required />
-                  </div>
-                  <div className="col-md-4 mb-3">
-                    <label className="form-label">Price</label>
-                    <input type="text" className="form-control" name="price" value={OrderForm.price} readOnly />
-                  </div>
-                  <div className="col-md-12 mb-3">
-                    <label className="form-label">Extra Instructions</label>
-                    <textarea className="form-control" name="extrainstructions"
-                      value={OrderForm.extrainstructions} onChange={handleOrderChange} rows="3"></textarea>
-                  </div>
-                </div>
-              </div>
-              <div className="modal-footer d-flex justify-content-center">
-                <button type="submit" className="btn btn-primary">{editMode ? 'Update Order' : 'Save Order'}</button>
-                <button type="button" className="btn btn-secondary" data-bs-dismiss="modal"
-                  onClick={() => { setEditMode(false); resetForm(); }}>Close</button>
-              </div>
-            </form>
-          </div>
+    <div
+  className="modal fade"
+  id="orderModal"
+  tabIndex="-1"
+  aria-labelledby="orderModalLabel"
+  aria-hidden="true"
+>
+  <div className="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+    <div
+      className="modal-content"
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        height: '90vh',
+      }}
+    >
+      <form
+        onSubmit={handleCustomerSubmit}
+        style={{ display: 'flex', flexDirection: 'column', flex: 1 }}
+      >
+        {/* Modal Header */}
+        <div className="modal-header">
+          <h5 className="modal-title">{editMode ? 'Edit Order' : 'Add Order'}</h5>
         </div>
+
+        {/* Modal Body (Scrollable) */}
+        <div
+          className="modal-body"
+          style={{
+            overflowY: 'auto',
+            flexGrow: 1,
+            paddingBottom: '1rem',
+          }}
+        >
+          <div className="row">
+            <div className="col-md-4 mb-3">
+              <label className="form-label">Order Date</label>
+              <input
+                type="datetime-local"
+                className="form-control"
+                name="orderdate"
+                value={OrderForm.orderdate}
+                onChange={handleOrderChange}
+                required
+              />
+            </div>
+
+            <div className="col-md-4 mb-3">
+              <label className="form-label">Product</label>
+              <select
+                className="form-control"
+                name="orderproduct"
+                value={OrderForm.orderproduct}
+                onChange={handleOrderChange}
+                required
+              >
+                <option value="">Select</option>
+                {Products.map((product) => (
+                  <option key={product.id} value={product.id}>
+                    {product.productName}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="col-md-4 mb-3">
+              <label className="form-label">Size</label>
+              <select
+                className="form-control"
+                name="size"
+                value={OrderForm.size}
+                onChange={handleOrderChange}
+                required
+              >
+                <option value="">Select</option>
+                {ProductSizes.map((size) => (
+                  <option key={size.id} value={size.id}>
+                    {size.size}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="col-md-4 mb-3">
+              <label className="form-label">Order Person</label>
+              <select
+                className="form-control"
+                name="orderperson"
+                value={OrderForm.orderperson}
+                onChange={handleOrderChange}
+                required
+              >
+                <option value="1">Self</option>
+                {LovedOnes.map((lovedOne) => (
+                  <option key={lovedOne.id} value={lovedOne.id}>
+                    {lovedOne.fullName}
+                  </option>
+                ))}
+                <option value="other">Other</option>
+              </select>
+            </div>
+
+            <div className="col-md-4 mb-3">
+              <label className="form-label">Quantity</label>
+              <input
+                type="number"
+                className="form-control"
+                name="quantity"
+                value={OrderForm.quantity}
+                onChange={handleOrderChange}
+                required
+              />
+            </div>
+
+            <div className="col-md-4 mb-3">
+              <label className="form-label">Price</label>
+              <input
+                type="text"
+                className="form-control"
+                name="price"
+                value={OrderForm.price}
+                onChange={handleOrderChange}
+                required
+              />
+            </div>
+
+            <div className="col-md-6 mb-3">
+              <label className="form-label">Extra Instructions</label>
+              <textarea
+                className="form-control"
+                name="extrainstructions"
+                value={OrderForm.extrainstructions}
+                onChange={handleOrderChange}
+              ></textarea>
+            </div>
+
+            <div className="col-md-6 mb-3">
+              <label className="form-label">Occasion</label>
+              <textarea
+                className="form-control"
+                name="occasion"
+                value={OrderForm.occasion}
+                onChange={handleOrderChange}
+              ></textarea>
+            </div>
+          </div>
+
+          {/* Conditionally show Loved One Fields */}
+          {OrderForm.orderperson === 'other' && (
+  <div className="mt-3">
+    <h5>Loved One Details</h5>
+    <div className="row">
+      <div className="col-md-4 mb-3">
+        <label className="form-label">Full Name</label>
+        <input
+          type="text"
+          className="form-control"
+          name="FullName"
+          value={LovedOneDetails.FullName}
+          onChange={(e) =>
+            setLovedOneDetails({
+              ...LovedOneDetails,
+              FullName: e.target.value,
+            })
+          }
+          required
+        />
       </div>
+
+      <div className="col-md-4 mb-3">
+        <label className="form-label">Relationship</label>
+        <input
+          type="text"
+          className="form-control"
+          name="Relationship"
+          value={LovedOneDetails.Relationship}
+          onChange={(e) =>
+            setLovedOneDetails({
+              ...LovedOneDetails,
+              Relationship: e.target.value,
+            })
+          }
+        />
+      </div>
+
+      <div className="col-md-4 mb-3">
+        <label className="form-label">DOB</label>
+        <input
+          type="date"
+          className="form-control"
+          name="DOB"
+          value={LovedOneDetails.DOB}
+          onChange={(e) =>
+            setLovedOneDetails({
+              ...LovedOneDetails,
+              DOB: e.target.value,
+            })
+          }
+        />
+      </div>
+
+      <div className="col-md-4 mb-3">
+        <label className="form-label">Gender</label>
+        <select
+          className="form-control"
+          name="gender"
+          value={LovedOneDetails.gender}
+          onChange={(e) =>
+            setLovedOneDetails({
+              ...LovedOneDetails,
+              gender: e.target.value,
+            })
+          }
+          required
+        >
+          <option value="">Select Gender</option>
+          <option value="Male">Male</option>
+          <option value="Female">Female</option>
+        </select>
+      </div>
+    </div>
+  </div>
+)}
+
+        </div>
+
+        {/* Sticky Footer */}
+        <div
+          className="modal-footer justify-content-center"
+          style={{
+            position: 'sticky',
+            bottom: 0,
+            backgroundColor: '#fff',
+            zIndex: 1050,
+            borderTop: '1px solid #dee2e6',
+          }}
+        >
+          <button type="submit" className="btn btn-primary">
+            {editMode ? 'Update Order' : 'Save Order'}
+          </button>
+          <button
+            type="button"
+            className="btn btn-secondary"
+            data-bs-dismiss="modal"
+            onClick={() => {
+              setEditMode(false);
+              resetForm();
+            }}
+          >
+            Close
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+
 
       <div
         className="modal fade"

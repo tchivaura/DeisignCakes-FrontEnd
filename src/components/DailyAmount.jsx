@@ -13,11 +13,11 @@ function DailyAmount() {
 
   
   const today = new Date().toLocaleDateString('en-CA');
-  
+  const filtereddailyamounts=alldailypayments.filter(d=>d.description==='order');
 
   
   let totalreceivedamount=0;
-  alldailypayments.forEach(payment => {
+  filtereddailyamounts.forEach(payment => {
   totalreceivedamount += Number(payment.amount);
     
   });
@@ -25,7 +25,7 @@ function DailyAmount() {
   const fetchallpayments= async() => 
     {
         try{
-          await axiosInstance.get(`/payments?date=${today}`)
+          await axiosInstance.get(`/payments/date/${today}`)
           .then(res=>setalldailypayments(res.data));
         }
         catch(err){
@@ -37,10 +37,10 @@ function DailyAmount() {
  {
      try
      {
-       await axiosInstance.get(`/orders?date=${today}`)
+       await axiosInstance.get(`/orders/date/${today}`)
        .then(res=>{
         setalldailyorders(res.data);
-        console.log((res.data)); 
+        
      });
      }
      catch(error){
@@ -58,6 +58,14 @@ todayorders.forEach(order => {
     totalamount= (Number(order.price) * Number(order.quantity) + totalamount );
     
  });
+ const pendingOrders = todayorders.filter(o => o.orderstatus.toLowerCase() === 'pending');
+ let pendingAmount=0;
+pendingOrders .forEach(order => {
+    pendingAmount= (Number(order.price) * Number(order.quantity) + pendingAmount );
+    
+ });
+ 
+
   
 
 
@@ -104,7 +112,7 @@ todayorders.forEach(order => {
                     <div className="row align-items-center m-b-25">
                       <div className="col">
                         <h6 className="m-b-5 text-white">Pending Amount</h6>
-                        <h3 className="m-b-0 text-white">123</h3>
+                        <h3 className="m-b-0 text-white">${pendingAmount}</h3>
                       </div>
                       <div className="col-auto">
                         <i className="fas fa-credit-card text-c-yellow f-18" />
@@ -119,7 +127,7 @@ todayorders.forEach(order => {
                     <div className="row align-items-center m-b-25">
                       <div className="col">
                         <h6 className="m-b-5 text-white">Cancelled Amount</h6>
-                        <h3 className="m-b-0 text-white">6,784</h3>
+                        <h3 className="m-b-0 text-white">0</h3>
                       </div>
                       <div className="col-auto">
                         <i className="fas fa-credit-card text-c-red f-18" />

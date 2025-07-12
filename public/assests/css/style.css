@@ -8380,11 +8380,17 @@ table.dataTable tbody > tr.selected td.select-checkbox:after, table.dataTable tb
     background: linear-gradient(45deg, #3949AB, #2962FF);
 }
 
+
 /* ==================== Justified variants ===================*/
 .nav-fill .nav-item {
     flex: 1 1 auto;
     text-align: center;
 }
+.nav-link.active {
+  background-color: #e0f0ff; /* Or whatever your active style is */
+  font-weight: bold;
+}
+
 
 .nav-justified .nav-item {
     flex-basis: 0;
@@ -8409,7 +8415,9 @@ table.dataTable tbody > tr.selected td.select-checkbox:after, table.dataTable tb
 }
 
 .modal-content {
-    border-radius: 2px;
+    max-height: 90vh;
+  display: flex;
+  flex-direction: column;
 }
 
 .modal-content .modal-header {
@@ -8429,6 +8437,32 @@ table.dataTable tbody > tr.selected td.select-checkbox:after, table.dataTable tb
         justify-content: center;
     }
 }
+.modal-dialog-scrollable .modal-body {
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.modal-content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.modal-body {
+  flex: 1 1 auto;
+  overflow-y: auto;
+}
+
+.modal-footer {
+  position: sticky;
+  bottom: 0;
+  background-color: #fff;
+  z-index: 1000;
+}
+
+
+
+
 
 /**  =====================
       Switches css start

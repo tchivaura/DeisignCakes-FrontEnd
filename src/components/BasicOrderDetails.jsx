@@ -1,7 +1,23 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import OrderPayments from './OrderPayments'; // Ensure the path is correct
+import axiosInstance from '../api/axios';
+
+
+
 
 function BasicOrderDetails({ Order, ProductSize }) {
+  
+  const[lovedone,setlovedone]= useState('');
+
+  useEffect (()=>
+    {
+      lovedonedetails();
+    },[]);
+
+    const lovedonedetails= ()=>{axiosInstance.get(`/LovedOnes/lovedoneid/${Order.orderperson}`)
+      .then (res=>setlovedone(res.data))};
+
+      
   return (
     <div className="card">
       <div className="card-header"><h5>Basic Order Details</h5></div>
@@ -63,7 +79,7 @@ function BasicOrderDetails({ Order, ProductSize }) {
                   type="text"
                   className="form-control"
                   name="orderfor"
-                  value={Order.orderperson}
+                  value={(lovedone.fullName==null)?'Self' :lovedone.fullName}
                   readOnly
                 />
               </div>
@@ -74,7 +90,7 @@ function BasicOrderDetails({ Order, ProductSize }) {
                   type="text"
                   className="form-control"
                   name="productname"
-                  value={Order.product.ProductName}
+                  value={Order.product.productName}
                   readOnly
                 />
               </div>
@@ -104,7 +120,7 @@ function BasicOrderDetails({ Order, ProductSize }) {
           
         </form>
 
-        {/* ⬇️ Pass price and quantity to OrderPayments */}
+       
         <OrderPayments
           orderId={Order.id}
           orderPrice={Order.price}

@@ -11,7 +11,7 @@ function EditCustomer() {
   const [customer, setCustomer] = useState({
     firstName: '',
     surname: '',
-    address: '',
+    addresss: '',
     telephone: '',
     gender: '',
     dob: '',
@@ -22,9 +22,11 @@ function EditCustomer() {
   const [labels, setLabels] = useState([]);
   const [lovedOnes, setLovedOnes] = useState([]);
   const [newLovedOne, setNewLovedOne] = useState({
-    fullName: '',
-    relationship: '',
-    contact: ''
+    FullName: '',
+    Relationship: '',
+    Contact: '',
+    DOB:'',
+    gender:''
   });
   const [editingLovedOne, setEditingLovedOne] = useState(null);
 
@@ -33,11 +35,11 @@ function EditCustomer() {
       setCustomer(res.data);
     });
 
-    axiosInstance.get(`/lovedOnes?customerId=${id}`).then(res => {
+    axiosInstance.get(`/LovedOnes/${id}`).then(res => {
       setLovedOnes(res.data);
     });
 
-    axiosInstance.get(`/labels`).then(res => {
+    axiosInstance.get(`/Labels`).then(res => {
       setLabels(res.data);
     });
   }, [id]);
@@ -65,19 +67,20 @@ function EditCustomer() {
 
   const handleAddLovedOne = (e) => {
     e.preventDefault();
-    axiosInstance.post('/lovedOnes', {
+    axiosInstance.post('/LovedOnes', {
       ...newLovedOne,
       customerId: id
     }).then(res => {
       setLovedOnes([...lovedOnes, res.data]);
-      setNewLovedOne({ fullName: '', relationship: '', contact: '' });
+      console.log(newLovedOne);
+      setNewLovedOne({ FullName: '', Relationship: '', Contact: '', DOB:'',gender:''});
       toast.success('Loved one added!');
     });
   };
 
   const handleEditLovedOne = (e) => {
     e.preventDefault();
-    axiosInstance.put(`/lovedOnes/${editingLovedOne.id}`, editingLovedOne).then(() => {
+    axiosInstance.put(`/LovedOnes/${editingLovedOne.id}`, editingLovedOne).then(() => {
       const updated = lovedOnes.map(lo =>
         lo.id === editingLovedOne.id ? editingLovedOne : lo
       );
@@ -168,13 +171,13 @@ function EditCustomer() {
                         
                           
                           <div className="col-md-3">
-                            <label htmlFor="address" className="form-label">Address</label>
+                            <label htmlFor="addresss" className="form-label">address</label>
                             <input
                               type="text"
                               className="form-control"
-                              id="address"
-                              name="address"
-                              value={customer.address}
+                              id="addresss"
+                              name="addresss"
+                              value={customer.addresss}
                               onChange={handleCustomerChange}
                             />
                           </div>
@@ -211,7 +214,7 @@ function EditCustomer() {
                             >
                               <option value="">Select Label</option>
                               {labels.map(label => (
-                                <option key={label.id} value={label.labelname}>{label.labelname}</option>
+                                <option key={label.id} value={label.name}>{label.name}</option>
                               ))}
                             </select>
                           
@@ -245,7 +248,9 @@ function EditCustomer() {
                           <th>#</th>
                           <th>Full Name</th>
                           <th>Relationship</th>
-                          <th>Contact</th>
+                          
+                          <th>Gender</th>
+                           <th>Date Of Birth</th>
                           <th>Actions</th>
                         </tr>
                       </thead>
@@ -255,7 +260,8 @@ function EditCustomer() {
                             <td>{index + 1}</td>
                             <td>{lo.fullName}</td>
                             <td>{lo.relationship}</td>
-                            <td>{lo.contact}</td>
+                            <td>{lo.gender}</td>
+                            <td>{lo.dob}</td>
                             <td>
                             <i 
                   className="fas fa-edit fa-lg me-5 text-primary "  
@@ -290,16 +296,34 @@ function EditCustomer() {
                       <div className="modal-body d-flex flex-column align-items-center">
                       <div className="mb-3 w-100" style={{ maxWidth: "400px" }}>
                       <label htmlFor="fullName" className="form-label">Full Name</label>
-                     <input type="text" required className="form-control" name="fullName" placeholder="Full Name" value={newLovedOne.fullName} onChange={handleLovedOneChange} />
+                     <input type="text" required className="form-control" name="FullName" placeholder="Full Name" value={newLovedOne.FullName} onChange={handleLovedOneChange} />
                      </div>
                     <div className="mb-3 w-100" style={{ maxWidth: "400px" }}>
                     <label htmlFor="relationship" className="form-label">Relationship</label>
-                  <input type="text" required className="form-control" name="relationship" placeholder="Relationship" value={newLovedOne.relationship} onChange={handleLovedOneChange} />
+                  <input type="text" required className="form-control" name="Relationship" placeholder="Relationship" value={newLovedOne.Relationship} onChange={handleLovedOneChange} />
                </div>
               <div className="mb-3 w-100" style={{ maxWidth: "400px" }}>
                <label htmlFor="contact" className="form-label">Contact</label>
-                <input type="text" className="form-control" name="contact" placeholder="Contact" value={newLovedOne.contact} onChange={handleLovedOneChange} />
+                <input type="text" className="form-control" name="Contact" placeholder="Contact" value={newLovedOne.Contact} onChange={handleLovedOneChange} />
                </div>
+               <div className="mb-3 w-100" style={{ maxWidth: "400px" }}>
+               <label htmlFor="contact" className="form-label">Date Of Birth</label>
+                <input type="date" className="form-control" name="DOB" placeholder="DOB" value={newLovedOne.DOB} onChange={handleLovedOneChange} />
+               </div>
+                <div className="mb-3 w-100" style={{ maxWidth: "400px" }}>
+                  <label>Gender</label>
+                < select
+                    className="form-control"
+                    value={newLovedOne.gender}
+                    onChange={handleLovedOneChange}
+                    name="gender"
+                  >
+                    <option value="">Select Gender</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                   
+                  </select>
+                </div>
               </div>
                       <div className="modal-footer d-flex justify-content-center" >
                       <button type="submit" className="btn btn-primary" >Save</button>
@@ -331,6 +355,10 @@ function EditCustomer() {
                           <div className="mb-3 w-100" style={{ maxWidth: "400px" }}>
                             <label htmlFor="contact" className="form-label">Contact</label>
                             <input type="text" className="form-control" name="contact" placeholder="Contact" value={editingLovedOne.contact} onChange={handleLovedOneChange} />
+                          </div>
+                          <div className="mb-3 w-100" style={{ maxWidth: "400px" }}>
+                            <label htmlFor="contact" className="form-label">Date of Birth</label>
+                            <input type="date" className="form-control" name="DOB" placeholder="DOB" value={editingLovedOne.DOB} onChange={handleLovedOneChange} />
                           </div>
                         </div>
                         <div className="modal-footer d-flex justify-content-center">

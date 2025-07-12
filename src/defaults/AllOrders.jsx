@@ -6,13 +6,14 @@ function AllOrders() {
   const [orders, setOrders] = useState([]);
   const [customers, setCustomers] = useState([]);
   const [products, setProducts] = useState([]);
-  const[sizes,setSizes]=useState([]);
+  const [sizes, setSizes] = useState([]);
   const [statusFilter, setStatusFilter] = useState('');
   const [productFilter, setProductFilter] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [searchName, setSearchName] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
+  const [lovedOnes, setLovedOnes] = useState([]);
   const ordersPerPage = 10;
 
   useEffect(() => {
@@ -20,6 +21,7 @@ function AllOrders() {
     axiosInstance.get('/customers').then(res => setCustomers(res.data));
     axiosInstance.get('/Products').then(res => setProducts(res.data));
     axiosInstance.get('/ProductSizes').then(res => setSizes(res.data));
+    axiosInstance.get('/lovedOnes/').then(res => setLovedOnes(res.data));
   }, []);
 
   const getCustomerName = (id) => {
@@ -29,25 +31,24 @@ function AllOrders() {
 
   const getProductName = (id) => {
     const product = products.find(p => p.id === id);
-    return product ? product.ProductName : 'Unknown';
-  
+    return product ? product.productName : 'Unknown';
   };
 
-  const getProductSize=(id)=>{
-    const productsize=sizes.find(p=>p.id===id);
-    return  productsize ? productsize.size : 'Unknown';
+  const getProductSize = (id) => {
+    const productsize = sizes.find(p => p.id === id);
+    return productsize ? productsize.size : 'Unknown';
   };
 
   const start = startDate ? moment(startDate).startOf('day') : null;
   const end = endDate ? moment(endDate).endOf('day') : null;
 
   const filteredOrders = orders.filter(order => {
-    const customerName = getCustomerName(order.customerId).toLowerCase();
+    const customerName = getCustomerName(order.customerid).toLowerCase();
     const orderDate = moment(order.orderdate);
 
     return (
       (!statusFilter || order.orderstatus.toLowerCase() === statusFilter.toLowerCase()) &&
-      (!productFilter || order.orderproduct === productFilter) &&
+      (!productFilter || order.orderproduct == productFilter) &&
       (!start || orderDate.isSameOrAfter(start)) &&
       (!end || orderDate.isSameOrBefore(end)) &&
       (!searchName || customerName.includes(searchName.toLowerCase()))
@@ -86,7 +87,7 @@ function AllOrders() {
                   <div className="card-body">
                     <div className="row mb-3">
                       <div className="col-md-2">
-                        <label>Search by Customer Name</label>
+                        <label>Customer Name</label>
                         <input
                           type="text"
                           className="form-control"
@@ -118,7 +119,7 @@ function AllOrders() {
                         >
                           <option value="">All</option>
                           {products.map(p => (
-                            <option key={p.id} value={p.id}>{p.ProductName}</option>
+                            <option key={p.id} value={p.id}>{p.productName}</option>
                           ))}
                         </select>
                       </div>
@@ -147,46 +148,55 @@ function AllOrders() {
                       </div>
                     </div>
 
-                    <table className="table table-bordered table-striped">
-                      <thead>
-                        <tr>
-                          <th>#</th>
-                          <th>Order Date</th>
-                          <th>Product</th>
-                          <th>Size</th>
-                          <th>Price</th>
-                          <th>Quantity</th>
-                          <th>Order For</th>
-                          <th>Customer</th>
-                          <th>Extra Instructions</th>
-                          <th>Status</th>
-                          <th>Operator</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {currentOrders.length > 0 ? (
-                          currentOrders.map((order, index) => (
-                            <tr key={order.id}>
-                              <td>{order.id}</td>
-                              <td>{moment(order.orderdate).format('YYYY-MM-DD HH:mm')}</td>
-                              <td>{getProductName(order.orderproduct)}</td>
-                              <td>{getProductSize(order.size)}</td>
-                              <td>{order.price}</td>
-                              <td>{order.quantity}</td>
-                              <td>{order.orderperson}</td>
-                              <td>{getCustomerName(order.customerId)}</td>
-                              <td>{order.extrainstructions}</td>
-                              <td>{order.orderstatus}</td>
-                              <td>{order.clerk}</td>
-                            </tr>
-                          ))
-                        ) : (
+                    {/* Scrollable table wrapper */}
+                    <div style={{ overflowX: 'auto' }}>
+                      <table className="table table-bordered table-striped">
+                        <thead>
                           <tr>
-                            <td colSpan="9" className="text-center">No orders found</td>
+                            <th>#</th>
+                            <th>Order Date</th>
+                            <th>Product</th>
+                            <th>Size</th>
+                            <th>Price</th>
+                            <th>Quantity</th>
+                            <th>Order For</th>
+                            <th>Customer</th>
+                            <th>Extra Instructions</th>
+                            <th>Occasion</th>
+                            <th>Status</th>
+                            <th>Operator</th>
                           </tr>
-                        )}
-                      </tbody>
-                    </table>
+                        </thead>
+                        <tbody>
+                          {currentOrders.length > 0 ? (
+                            currentOrders.map((order, index) => (
+                              <tr key={order.id}>
+                                <td>{order.id}</td>
+                                <td>{moment(order.orderdate).format('YYYY-MM-DD HH:mm')}</td>
+                                <td>{getProductName(order.orderproduct)}</td>
+                                <td>{getProductSize(order.size)}</td>
+                                <td>{order.price}</td>
+                                <td>{order.quantity}</td>
+                                <td>
+                                  {Number(order.orderperson) === 1
+                                    ? 'Self'
+                                    : lovedOnes.find((l) => Number(l.id) === Number(order.orderperson))?.fullName || 'Other'}
+                                </td>
+                                <td>{getCustomerName(order.customerid)}</td>
+                                <td>{order.extrainstructions}</td>
+                                 <td>{order.occasion}</td>
+                                <td>{order.orderstatus}</td>
+                                <td>{order.clerk}</td>
+                              </tr>
+                            ))
+                          ) : (
+                            <tr>
+                              <td colSpan="11" className="text-center">No orders found</td>
+                            </tr>
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
 
                     {totalPages > 1 && (
                       <nav className="mt-3">
@@ -211,7 +221,7 @@ function AllOrders() {
             </div>
           </div>
         </div>
-      </div>    
+      </div>
     </div>
   );
 }
