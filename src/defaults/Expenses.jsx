@@ -8,8 +8,11 @@ function Expenses() {
   const [showModal, setShowModal] = useState(false);
   const [editExpense, setEditExpense] = useState(null);
   const [paymentTypes, setPaymentTypes] = useState([]);
+  const [suppliers, setSuppliers] = useState([]);
+  const [filterSupplier, setFilterSupplier] = useState('');
   const [expense, setNewExpense] = useState({
     paymenttype: '',
+    supplier:'',
     date: new Date().toISOString().slice(0, 10),
     amount: '',
     description: 'expense',
@@ -18,15 +21,16 @@ function Expenses() {
   });
 
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5;
+  const itemsPerPage = 20;
 
-  const [fromDate, setFromDate] = useState('');
+  const [fromDate, setFromDate] = useState(new Date().toLocaleDateString('en-CA'));
   const [toDate, setToDate] = useState('');
   const [filterPaymentType, setFilterPaymentType] = useState('');
 
   useEffect(() => {
     fetchAllExpenses();
     axiosInstance.get('/paymenttypes').then(res => setPaymentTypes(res.data));
+    axiosInstance.get('/suppliers').then(res => setSuppliers(res.data));
   }, []);
 
   const fetchAllExpenses = () => {
@@ -39,6 +43,7 @@ function Expenses() {
   const resetForm = () => {
     setNewExpense({
       paymenttype: '',
+      supplier:'',
       description: 'expense',
       amount: '',
       date: new Date().toISOString().slice(0, 10),
@@ -54,6 +59,7 @@ function Expenses() {
     setNewExpense({
       paymenttype: ex.paymenttype,
       description: 'expense',
+      suplier:ex.supplier,
       amount: Math.abs(ex.amount),
       date: new Date().toISOString().slice(0, 10),
       expensedetail: ex.expensedetail,
@@ -106,9 +112,10 @@ function Expenses() {
   // Filtering
   const filteredExpenses = expenses.filter((ex) => {
     const matchesPaymentType = filterPaymentType ? ex.paymenttype == filterPaymentType : true;
+    const matchesSupplier = filterSupplier ? ex.supplier == filterSupplier : true;
     const matchesFromDate = fromDate ? new Date(ex.date) >= new Date(fromDate) : true;
     const matchesToDate = toDate ? new Date(ex.date) <= new Date(toDate) : true;
-    return matchesPaymentType && matchesFromDate && matchesToDate;
+    return matchesPaymentType && matchesFromDate && matchesToDate && matchesSupplier;
   });
 
   const totalPages = Math.ceil(filteredExpenses.length / itemsPerPage);
@@ -176,6 +183,20 @@ function Expenses() {
                           ))}
                         </select>
                       </div>
+                      <div className="col-md-3">
+                 <label>Supplier</label>
+                    <select
+                        className="form-control"
+                              value={filterSupplier}
+                   onChange={(e) => setFilterSupplier(e.target.value)}
+                   >
+                      <option value="">All</option>
+                 {suppliers.map(sup => (
+               <option key={sup.id} value={sup.id}>{sup.suppliername}</option>
+                     ))}
+                 </select>
+</div>
+
                     </div>
 
                     {/* Table */}
@@ -184,6 +205,7 @@ function Expenses() {
                         <tr>
                           <th>Date</th>
                           <th>Payment Type</th>
+                          <th>Supplier</th>
                           <th>Payment Detail</th>
                           <th>Amount</th>
                           <th>Operator</th>
@@ -195,6 +217,7 @@ function Expenses() {
                           <tr key={ex.id}>
                             <td>{ex.date}</td>
                             <td>{paymentTypes.find((pt) => pt.id == ex.paymenttype)?.name || 'Unknown'}</td>
+                            <td>{suppliers.find((pt) => pt.id == ex.supplier)?.suppliername || 'Unknown'}</td>
                             <td>{ex.expensedetail}</td>
                             <td>{Math.abs(ex.amount)}</td>
                             <td>{(ex.clerk)}</td>
@@ -263,6 +286,23 @@ function Expenses() {
                               {paymentTypes.map((type) => (
                                 <option key={type.id} value={type.id}>
                                   {type.name}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+
+                           <div className="form-group mb-2">
+                            <label>Supplier If Any</label>
+                            <select
+                              name="supplier"
+                              className="form-control"
+                              value={expense.supplier}
+                              onChange={handleExpenseChange}
+                            >
+                              <option value=""></option>
+                              {suppliers.map((type) => (
+                                <option key={type.id} value={type.id}>
+                                  {type.suppliername}
                                 </option>
                               ))}
                             </select>

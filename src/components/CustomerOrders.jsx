@@ -8,6 +8,8 @@ function CustomerOrders({ customer }) {
   const [ProductSizes, setProductSizes] = useState([]);
   const [CustomerOrders, setCustomerOrders] = useState([]);
   const [ProductPrices, setProductPrices] = useState([]);
+  
+   const [payments, setPayments] = useState([]);
   const [OrderForm, setOrderForm] = useState({
     orderdate: '',
     orderproduct: '',
@@ -42,7 +44,7 @@ const[LovedOneDetails,setLovedOneDetails]= useState({
    gengder:''
 })
 
-  const ordersPerPage = 5;
+  const ordersPerPage = 20;
 
   useEffect(() => {
     fetchData();
@@ -54,6 +56,7 @@ const[LovedOneDetails,setLovedOneDetails]= useState({
     axiosInstance.get(`/ProductSizes`).then((res) => setProductSizes(res.data));
     axiosInstance.get(`/orders/bycustomer/${customer.id}`).then((res) => setCustomerOrders(res.data));
     axiosInstance.get(`/ProductPrices`).then((res) => setProductPrices(res.data));
+
   };
 
   const handleOrderChange = (e) => {
@@ -160,6 +163,36 @@ const[LovedOneDetails,setLovedOneDetails]= useState({
     setComplaintData({ ...complaintData, complaint: e.target.value });
   };
 
+ const handleReopenClick = async (order) => {
+  try {
+    const confirm = window.confirm("Are You Sure You Want To Roll Back  The Order? This  Will Remove All Payments.");
+    if (!confirm) return;
+
+    // Update order status to Pending
+    await axiosInstance.patch(`/orders/${order.id}`, { orderstatus: 'Pending' });
+
+    // Fetch related payments
+    const res = await axiosInstance.get(`/payments/${order.id}`);
+    const paymentsToDelete = res.data;
+
+    // Delete each payment
+    await Promise.all(
+      paymentsToDelete.map(payment =>
+        axiosInstance.delete(`/payments/${payment.id}`)
+      )
+    );
+
+    // Refresh local state if needed
+    setPayments(prev => prev.filter(p => p.orderId !== order.id));
+
+    toast.success("Order rolled back successfully.");
+     fetchData();
+  } catch (error) {
+    toast.error("Something went wrong while reopening the order.");
+    console.error(error);
+  }
+};
+
   const handleSubmitComplaint = async () => {
     console.log(complaintData);
     try {
@@ -180,9 +213,8 @@ const[LovedOneDetails,setLovedOneDetails]= useState({
     return d.toLocaleString('en-GB', {
       year: 'numeric',
       month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
+      day: '2-digit'
+      
     });
   };
 
@@ -291,11 +323,19 @@ const[LovedOneDetails,setLovedOneDetails]= useState({
                             Cancel
                           </button>
                         </>
-                      ) : (
+                      ) : (<>
                         <button className="btn btn-sm btn-info me-1" data-bs-toggle="modal"  data-bs-target="#complaintModal" onClick={() => handleComplaintClick(order)}
                         >
                         Add Complaint
                       </button>
+                      <button className="btn btn-sm btn-info me-1"  onClick={() => handleReopenClick(order)}
+                        >
+                        Roll Back
+                      </button>
+
+                      </>
+                      
+                      
                       )}
                     </td>
                   </tr>
@@ -430,7 +470,7 @@ const[LovedOneDetails,setLovedOneDetails]= useState({
             <div className="col-md-4 mb-3">
               <label className="form-label">Quantity</label>
               <input
-                type="number"
+                type="text"
                 className="form-control"
                 name="quantity"
                 value={OrderForm.quantity}

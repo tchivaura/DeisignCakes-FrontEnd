@@ -7,6 +7,7 @@ function AllFinances() {
   const [allpayments, setAllpayments] = useState([]);
   const [paymentTypes, setPaymentTypes] = useState([]);
   const [filteredPayments, setFilteredPayments] = useState([]);
+  const [suppliers, setsuppliers] = useState([]);
   const [filters, setFilters] = useState({
     paymentType: '',
     transactionType: '',
@@ -15,11 +16,12 @@ function AllFinances() {
   });
 
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5;
+  const itemsPerPage = 20;
 
   useEffect(() => {
     fetchAllPayments();
     axiosInstance.get('/paymenttypes').then(res => setPaymentTypes(res.data));
+    axiosInstance.get('/suppliers').then(res => setsuppliers(res.data));
   }, []);
 
   const fetchAllPayments = () => {
@@ -141,6 +143,7 @@ function AllFinances() {
                           <th>Payment Method</th>
                           <th>Transaction Type</th>
                           <th>Payment Detail</th>
+                          <th>Supplier</th>
                           <th>Amount</th>
                           <th>Operator</th>
                         </tr>
@@ -152,6 +155,7 @@ function AllFinances() {
                             <td>{paymentTypes.find((pt) => pt.id == ex.paymenttype)?.name || 'Unknown'}</td>
                             <td>{(ex.description) === 'order' ? 'Order' : 'Expense'}</td>
                             <td>{(ex.expensedetail == null) ? 'Order Payment' : ex.expensedetail}</td>
+                           <td>{suppliers.find((pt) => pt.id == ex.supplier)?.suppliername || ''}</td>
                             <td>{ex.amount}</td>
                             <td>{ex.clerk}</td>
                           </tr>

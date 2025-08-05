@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axiosInstance from '../api/axios';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import moment from 'moment';
 
 function CustomerComplaints() {
   const [complaints, setComplaints] = useState([]);
@@ -68,11 +69,17 @@ function CustomerComplaints() {
     }
 
     if (startDate) {
-      filtered = filtered.filter(c => new Date(c.date) >= new Date(startDate));
+      const start = moment(startDate, 'YYYY-MM-DD').startOf('day');
+      filtered = filtered.filter(c =>
+        moment(c.date, 'DD/MM/YYYY').isSameOrAfter(start)
+      );
     }
 
     if (endDate) {
-      filtered = filtered.filter(c => new Date(c.date) <= new Date(endDate));
+      const end = moment(endDate, 'YYYY-MM-DD').endOf('day');
+      filtered = filtered.filter(c =>
+        moment(c.date, 'DD/MM/YYYY').isSameOrBefore(end)
+      );
     }
 
     setFilteredComplaints(filtered);
@@ -177,7 +184,7 @@ function CustomerComplaints() {
                       {filteredComplaints.map((complaint) => (
                         <tr key={complaint.id}>
                           <td>{complaint.orderId}</td>
-                          <td>{complaint.date}</td>
+                          <td>{moment(complaint.date, 'DD/MM/YYYY').format('YYYY-MM-DD')}</td>
                           <td>{getCustomerName(complaint.customerId)}</td>
                           <td>{getProductName(getProductOrderID(complaint.orderId))}</td>
                           <td>{complaint.complaint}</td>

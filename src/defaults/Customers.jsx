@@ -9,7 +9,7 @@ function Customers() {
   const [customers, setCustomers] = useState([]);
   const [labels, setLabels] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const customersPerPage = 5;
+  const customersPerPage = 20;
   const [showModal, setShowModal] = useState(false);
   const [newCustomer, setNewCustomer] = useState({
     firstName: '',

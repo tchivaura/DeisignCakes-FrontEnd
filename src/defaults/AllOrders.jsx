@@ -7,14 +7,14 @@ function AllOrders() {
   const [customers, setCustomers] = useState([]);
   const [products, setProducts] = useState([]);
   const [sizes, setSizes] = useState([]);
-  const [statusFilter, setStatusFilter] = useState('');
+  const [statusFilter, setStatusFilter] = useState('pending');
   const [productFilter, setProductFilter] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [searchName, setSearchName] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [lovedOnes, setLovedOnes] = useState([]);
-  const ordersPerPage = 10;
+  const ordersPerPage = 20;
 
   useEffect(() => {
     axiosInstance.get('/orders').then(res => setOrders(res.data));
@@ -46,6 +46,7 @@ function AllOrders() {
     const customerName = getCustomerName(order.customerid).toLowerCase();
     const orderDate = moment(order.orderdate);
 
+
     return (
       (!statusFilter || order.orderstatus.toLowerCase() === statusFilter.toLowerCase()) &&
       (!productFilter || order.orderproduct == productFilter) &&
@@ -59,6 +60,9 @@ function AllOrders() {
   const indexOfFirstOrder = indexOfLastOrder - ordersPerPage;
   const currentOrders = filteredOrders.slice(indexOfFirstOrder, indexOfLastOrder);
   const totalPages = Math.ceil(filteredOrders.length / ordersPerPage);
+  const totalAmount = filteredOrders.reduce((sum, order) => {
+  return sum + (parseFloat(order.price) * parseInt(order.quantity));
+}, 0);
 
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
@@ -196,7 +200,12 @@ function AllOrders() {
                           )}
                         </tbody>
                       </table>
-                    </div>
+                    
+                    
+                    <div className="mb-2">
+  <strong style={{ fontWeight: 'bold' }}> Total Amount:  ${totalAmount.toFixed(2)}</strong> 
+</div></div>
+                    
 
                     {totalPages > 1 && (
                       <nav className="mt-3">

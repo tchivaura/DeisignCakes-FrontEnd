@@ -22,6 +22,7 @@ import CustomerComplaints from './defaults/CustomerComplaints';
 import Expenses from './defaults/Expenses';
 
 import AllFinances from './defaults/AllFinances';
+import Suppliers from './defaults/Suppliers';
 
 
 function AppContent() {
@@ -65,6 +66,7 @@ function AppContent() {
         <Route path="/complains" element={<CustomerComplaints />} />
         <Route path="/expenses" element={<Expenses />} />
         <Route path="/alltransactions" element={<AllFinances/>} />
+        <Route path="/suppliers" element={<Suppliers/>} />
       </Routes>
     </div>
   );

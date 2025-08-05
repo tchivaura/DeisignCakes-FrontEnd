@@ -10,11 +10,11 @@ const AllPayments = () => {
 
   const [searchCustomer, setSearchCustomer] = useState('');
   const [selectedPaymentType, setSelectedPaymentType] = useState('');
-  const [fromDate, setFromDate] = useState('');
+  const [fromDate, setFromDate] = useState(new Date().toLocaleDateString('en-CA'));
   const [toDate, setToDate] = useState('');
 
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
+  const itemsPerPage = 20;
 
   useEffect(() => {
     fetchAllData();
