@@ -23,6 +23,7 @@ import Expenses from './defaults/Expenses';
 
 import AllFinances from './defaults/AllFinances';
 import Suppliers from './defaults/Suppliers';
+import ProductSizes from './defaults/ProductSizes';
 
 
 function AppContent() {
@@ -67,6 +68,7 @@ function AppContent() {
         <Route path="/expenses" element={<Expenses />} />
         <Route path="/alltransactions" element={<AllFinances/>} />
         <Route path="/suppliers" element={<Suppliers/>} />
+        <Route path="/productsizes" element={<ProductSizes/>} />
       </Routes>
     </div>
   );

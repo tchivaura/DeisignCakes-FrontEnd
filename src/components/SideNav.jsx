@@ -116,6 +116,12 @@ function SideNav({ role }) {
                   </NavLink>
                 </li>
                 <li className="nav-item">
+                  <NavLink to="/productsizes" className={getLinkClass}>
+                    <span className="pcoded-micon"><i className="feather icon-package" /></span>
+                    <span className="pcoded-mtext">Sizes</span>
+                  </NavLink>
+                </li>
+                <li className="nav-item">
                   <NavLink to="/paymenttypes" className={getLinkClass}>
                     <span className="pcoded-micon"><i className="feather icon-credit-card" /></span>
                     <span className="pcoded-mtext">Payment Types</span>
