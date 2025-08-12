@@ -16,7 +16,7 @@ function OrderPayments({ orderId, orderPrice, orderQuantity }) {
     description:"order"
   });
 
-  const totalPrice = parseFloat(orderPrice) * parseInt(orderQuantity);
+  const totalPrice = Math.round( parseFloat(orderPrice) * parseInt(orderQuantity),0);
 
   useEffect(() => {
     fetchPayments();

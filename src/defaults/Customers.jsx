@@ -3,13 +3,13 @@ import axiosInstance from '../api/axios';
 import { Link } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import SearchableList from '../components/SearchableList';
 
 function Customers() {
   const [customers, setCustomers] = useState([]);
   const [labels, setLabels] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const customersPerPage = 20;
+  const [searchTerm, setSearchTerm] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [newCustomer, setNewCustomer] = useState({
     firstName: '',
@@ -68,10 +68,17 @@ function Customers() {
       .catch(err => console.log(err));
   };
 
+  // Filter customers by search term
+  const filteredCustomers = customers.filter(c =>
+    [c.firstName, c.surname, c.telephone].some(field =>
+      field?.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+  );
+
   const indexOfLastCustomer = currentPage * customersPerPage;
   const indexOfFirstCustomer = indexOfLastCustomer - customersPerPage;
-  const pagedCustomers = customers.slice(indexOfFirstCustomer, indexOfLastCustomer);
-  const totalPages = Math.ceil(customers.length / customersPerPage);
+  const pagedCustomers = filteredCustomers.slice(indexOfFirstCustomer, indexOfLastCustomer);
+  const totalPages = Math.ceil(filteredCustomers.length / customersPerPage);
 
   return (
     <div className="pcoded-main-container">
@@ -90,49 +97,87 @@ function Customers() {
                     </button>
                   </div>
                   <div className="card-body table-border-style">
-                    <SearchableList
-                      data={pagedCustomers}
-                      headers={['#', 'First Name', 'Surname', 'Telephone', 'Base', 'Label', 'Action']}
-                      searchFields={['firstName', 'surname', 'telephone']}
-                      renderRow={(cust, index) => (
-                        <tr key={cust.id}>
-                          <td>{indexOfFirstCustomer + index + 1}</td>
-                          <td>{cust.firstName}</td>
-                          <td>{cust.surname}</td>
-                          <td>{cust.telephone}</td>
-                          <td>{cust.base}</td>
-                          <td>{cust.label}</td>
-                          <td>
-                            <Link to={`/editcustomer/${cust.id}`} className="btn btn-sm btn-warning me-2">
-                              Edit
-                            </Link>
-                            <button
-                              className="btn btn-sm btn-danger"
-                              onClick={() => handleDeleteCustomer(cust.id)}
-                            >
-                              Delete
-                            </button>
-                          </td>
-                        </tr>
-                      )}
-                    />
+                    {/* Simple Search Input */}
+                    <div className="col-md-4">
+  <input
+    type="text"
+    className="form-control form-control-sm mb-3"
+    placeholder="Search by First Name, Surname or Telephone"
+    value={searchTerm}
+    onChange={(e) => {
+      setSearchTerm(e.target.value);
+      setCurrentPage(1); // reset to first page on search
+    }}
+  />
+</div>
+
+                    <div className="table-responsive">
+                      <table className="table table-hover">
+                        <thead>
+                          <tr>
+                            <th>#</th>
+                            <th>First Name</th>
+                            <th>Surname</th>
+                            <th>Telephone</th>
+                            <th>Base</th>
+                            <th>Label</th>
+                            <th>Action</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {pagedCustomers.map((cust, index) => (
+                            <tr key={cust.id}>
+                              <td>{indexOfFirstCustomer + index + 1}</td>
+                              <td>{cust.firstName}</td>
+                              <td>{cust.surname}</td>
+                              <td>{cust.telephone}</td>
+                              <td>{cust.base}</td>
+                              <td>{cust.label}</td>
+                              <td>
+                                <Link to={`/editcustomer/${cust.id}`} className="btn btn-sm btn-warning me-2">
+                                  Edit
+                                </Link>
+                                <button
+                                  className="btn btn-sm btn-danger"
+                                  onClick={() => handleDeleteCustomer(cust.id)}
+                                >
+                                  Delete
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                          {pagedCustomers.length === 0 && (
+                            <tr>
+                              <td colSpan="7" className="text-center">No customers found.</td>
+                            </tr>
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+
+                    {/* Pagination */}
+                    <nav className="mt-3">
+                      <ul className="pagination justify-content-center">
+                        <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
+                          <button
+                            className="page-link"
+                            onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                          >
+                            Previous
+                          </button>
+                        </li>
+                        <li className={`page-item ${currentPage === totalPages || totalPages === 0 ? 'disabled' : ''}`}>
+                          <button
+                            className="page-link"
+                            onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                          >
+                            Next
+                          </button>
+                        </li>
+                      </ul>
+                    </nav>
                   </div>
                 </div>
-
-                <nav className="mt-3">
-                  <ul className="pagination justify-content-center">
-                    {Array.from({ length: totalPages }, (_, i) => (
-                      <li
-                        key={i}
-                        className={`page-item ${currentPage === i + 1 ? 'active' : ''}`}
-                        onClick={() => setCurrentPage(i + 1)}
-                        style={{ cursor: 'pointer' }}
-                      >
-                        <span className="page-link">{i + 1}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </nav>
 
               </div>
             </div>
@@ -151,23 +196,55 @@ function Customers() {
               </div>
               <div className="modal-body">
                 <div className="row">
-                  {[
-                    { label: 'First Name', value: 'firstName' },
-                    { label: 'Surname', value: 'surname' },
-                    { label: 'Telephone', value: 'telephone' },
-                    { label: 'Base', value: 'base' },
-                    { label: 'Address', value: 'addresss' },
-                  ].map(({ label, value }) => (
-                    <div className="col-md-4 mb-3" key={value}>
-                      <label>{label}</label>
-                      <input
-                        type="text"
-                        className="form-control"
-                        value={newCustomer[value]}
-                        onChange={(e) => setNewCustomer({ ...newCustomer, [value]: e.target.value })}
-                      />
-                    </div>
-                  ))}
+                  <div className="col-md-4 mb-3">
+                    <label>First Name</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      value={newCustomer.firstName}
+                      onChange={(e) => setNewCustomer({ ...newCustomer, firstName: e.target.value })}
+                    />
+                  </div>
+
+                  <div className="col-md-4 mb-3">
+                    <label>Surname</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      value={newCustomer.surname}
+                      onChange={(e) => setNewCustomer({ ...newCustomer, surname: e.target.value })}
+                    />
+                  </div>
+
+                  <div className="col-md-4 mb-3">
+                    <label>Telephone</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      value={newCustomer.telephone}
+                      onChange={(e) => setNewCustomer({ ...newCustomer, telephone: e.target.value })}
+                    />
+                  </div>
+
+                  <div className="col-md-4 mb-3">
+                    <label>Base</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      value={newCustomer.base}
+                      onChange={(e) => setNewCustomer({ ...newCustomer, base: e.target.value })}
+                    />
+                  </div>
+
+                  <div className="col-md-4 mb-3">
+                    <label>Address</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      value={newCustomer.addresss}
+                      onChange={(e) => setNewCustomer({ ...newCustomer, addresss: e.target.value })}
+                    />
+                  </div>
 
                   <div className="col-md-4 mb-3">
                     <label>Gender</label>

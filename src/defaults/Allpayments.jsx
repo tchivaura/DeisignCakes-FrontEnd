@@ -194,17 +194,25 @@ const AllPayments = () => {
                     <h5>
                       Total Amount: ${filteredPayments.reduce((sum, payment) => sum + Number(payment.amount || 0), 0).toFixed(2)}
                     </h5>
-                    <div>
-                      {Array.from({ length: totalPages }, (_, index) => index + 1).map((page) => (
-                        <button
-                          key={page}
-                          className={`btn btn-sm mx-1 ${currentPage === page ? 'btn-primary' : 'btn-outline-primary'}`}
-                          onClick={() => handlePageChange(page)}
-                        >
-                          {page}
-                        </button>
-                      ))}
-                    </div>
+                   <div className="d-flex align-items-center gap-2">
+  <button
+    className="btn btn-sm btn-outline-primary"
+    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+    disabled={currentPage === 1}
+  >
+    Previous
+  </button>
+
+  <span className="mx-2">Page {currentPage} of {totalPages}</span>
+
+  <button
+    className="btn btn-sm btn-outline-primary"
+    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+    disabled={currentPage === totalPages}
+  >
+    Next
+  </button>
+</div>
                   </div>
 
                 </div>

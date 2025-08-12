@@ -209,20 +209,32 @@ function AllOrders() {
 
                     {totalPages > 1 && (
                       <nav className="mt-3">
-                        <ul className="pagination justify-content-center">
-                          {[...Array(totalPages)].map((_, index) => (
-                            <li
-                              key={index}
-                              className={`page-item ${currentPage === index + 1 ? 'active' : ''}`}
-                              onClick={() => handlePageChange(index + 1)}
-                            >
-                              <button className="page-link">
-                                {index + 1}
-                              </button>
-                            </li>
-                          ))}
-                        </ul>
-                      </nav>
+  <ul className="pagination justify-content-center">
+    <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
+      <button
+        className="page-link"
+        onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+        disabled={currentPage === 1}
+      >
+        Previous
+      </button>
+    </li>
+    <li className="page-item disabled">
+      <span className="page-link">
+        Page {currentPage} of {totalPages}
+      </span>
+    </li>
+    <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
+      <button
+        className="page-link"
+        onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+        disabled={currentPage === totalPages}
+      >
+        Next
+      </button>
+    </li>
+  </ul>
+</nav>
                     )}
                   </div>
                 </div>

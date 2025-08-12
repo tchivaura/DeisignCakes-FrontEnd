@@ -17,6 +17,9 @@ function CustomerComplaints() {
   const [lovedOnes, setLovedOnes] = useState([]);
   const [orders, setOrders] = useState([]);
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 20;
+
   useEffect(() => {
     fetchComplaints();
     axiosInstance.get('/orders').then(res => setOrders(res.data));
@@ -83,6 +86,7 @@ function CustomerComplaints() {
     }
 
     setFilteredComplaints(filtered);
+    setCurrentPage(1); // Reset to page 1 after filtering
   };
 
   useEffect(() => {
@@ -95,6 +99,22 @@ function CustomerComplaints() {
     setStartDate('');
     setEndDate('');
     setFilteredComplaints(complaints);
+    setCurrentPage(1);
+  };
+
+  // Pagination Logic
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = filteredComplaints.slice(indexOfFirstItem, indexOfLastItem);
+
+  const totalPages = Math.ceil(filteredComplaints.length / itemsPerPage);
+
+  const handleNext = () => {
+    if (currentPage < totalPages) setCurrentPage(prev => prev + 1);
+  };
+
+  const handlePrevious = () => {
+    if (currentPage > 1) setCurrentPage(prev => prev - 1);
   };
 
   return (
@@ -181,17 +201,44 @@ function CustomerComplaints() {
                       </tr>
                     </thead>
                     <tbody>
-                      {filteredComplaints.map((complaint) => (
-                        <tr key={complaint.id}>
-                          <td>{complaint.orderId}</td>
-                          <td>{moment(complaint.date, 'DD/MM/YYYY').format('YYYY-MM-DD')}</td>
-                          <td>{getCustomerName(complaint.customerId)}</td>
-                          <td>{getProductName(getProductOrderID(complaint.orderId))}</td>
-                          <td>{complaint.complaint}</td>
+                      {currentItems.length > 0 ? (
+                        currentItems.map((complaint) => (
+                          <tr key={complaint.id}>
+                            <td>{complaint.orderId}</td>
+                            <td>{moment(complaint.date, 'DD/MM/YYYY').format('YYYY-MM-DD')}</td>
+                            <td>{getCustomerName(complaint.customerId)}</td>
+                            <td>{getProductName(getProductOrderID(complaint.orderId))}</td>
+                            <td>{complaint.complaint}</td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td colSpan="5" className="text-center">No complaints found.</td>
                         </tr>
-                      ))}
+                      )}
                     </tbody>
                   </table>
+
+                  {/* Pagination Buttons */}
+                  <div className="d-flex justify-content-between align-items-center">
+                    <button
+                      className="btn btn-outline-primary"
+                      onClick={handlePrevious}
+                      disabled={currentPage === 1}
+                    >
+                      Previous
+                    </button>
+                    <span>
+                      Page {currentPage} of {totalPages}
+                    </span>
+                    <button
+                      className="btn btn-outline-primary"
+                      onClick={handleNext}
+                      disabled={currentPage === totalPages || totalPages === 0}
+                    >
+                      Next
+                    </button>
+                  </div>
 
                 </div>
               </div>

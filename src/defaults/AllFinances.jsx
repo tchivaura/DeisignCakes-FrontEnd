@@ -8,6 +8,7 @@ function AllFinances() {
   const [paymentTypes, setPaymentTypes] = useState([]);
   const [filteredPayments, setFilteredPayments] = useState([]);
   const [suppliers, setsuppliers] = useState([]);
+  const [openingBalance, setOpeningBalance] = useState(0);
   const [filters, setFilters] = useState({
     paymentType: '',
     transactionType: '',
@@ -18,9 +19,23 @@ function AllFinances() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 20;
 
+  // ⏱️ On first load
   useEffect(() => {
     fetchAllPayments();
-    axiosInstance.get('/paymenttypes').then(res => setPaymentTypes(res.data));
+    axiosInstance.get('/paymenttypes').then(res => {
+      setPaymentTypes(res.data);
+
+      const cashType = res.data.find(pt => pt.name.toLowerCase() === "cash");
+      const today = new Date().toISOString().split('T')[0];
+
+      if (cashType) {
+        setFilters(prev => ({
+          ...prev,
+          paymentType: cashType.id,
+          startDate: today
+        }));
+      }
+    });
     axiosInstance.get('/suppliers').then(res => setsuppliers(res.data));
   }, []);
 
@@ -40,16 +55,20 @@ function AllFinances() {
   };
 
   const handleResetFilters = () => {
+    const today = new Date().toISOString().split('T')[0];
+    const cashType = paymentTypes.find(pt => pt.name.toLowerCase() === "cash");
     setFilters({
-      paymentType: '',
+      paymentType: cashType ? cashType.id : '',
       transactionType: '',
-      startDate: '',
+      startDate: today,
       endDate: ''
     });
   };
 
+  // 👀 Watch filters and payments
   useEffect(() => {
     filterPayments();
+    fetchOpeningBalance();
     setCurrentPage(1);
   }, [filters, allpayments]);
 
@@ -75,7 +94,24 @@ function AllFinances() {
     setFilteredPayments(data);
   };
 
-  const totalAmount = filteredPayments.reduce((sum, p) => sum + parseFloat(p.amount), 0);
+  const fetchOpeningBalance = () => {
+    if (!filters.startDate || !filters.paymentType) {
+      setOpeningBalance(0);
+      return;
+    }
+
+    axiosInstance
+      .get(`/payments/balance?startdate=${filters.startDate}&paymenttype=${filters.paymentType}`)
+      .then(res => setOpeningBalance(res.data))
+      .catch(err => {
+        console.error('Failed to fetch opening balance:', err);
+        setOpeningBalance(0);
+      });
+  };
+
+  const filteredTotal = filteredPayments.reduce((sum, p) => sum + parseFloat(p.amount), 0);
+  const closingBalance = openingBalance + filteredTotal;
+
 
   // Pagination Logic
   const indexOfLast = currentPage * itemsPerPage;
@@ -97,7 +133,7 @@ function AllFinances() {
                   </div>
 
                   <div className="card-body">
-                    {/* Filters + Reset on same row */}
+                    {/* Filters */}
                     <div className="row mb-3">
                       <div className="col-md-2">
                         <label>Payment Method</label>
@@ -149,13 +185,21 @@ function AllFinances() {
                         </tr>
                       </thead>
                       <tbody>
+                        {/* Opening Balance */}
+                        <tr style={{ backgroundColor: '#e7f3ff', fontWeight: 'bold' }}>
+                          <td colSpan="5">Opening Balance</td>
+                          <td>{openingBalance.toFixed(2)}</td>
+                          <td></td>
+                        </tr>
+
+                        {/* Transactions */}
                         {currentItems.map((ex) => (
                           <tr key={ex.id}>
                             <td>{ex.date}</td>
                             <td>{paymentTypes.find((pt) => pt.id == ex.paymenttype)?.name || 'Unknown'}</td>
-                            <td>{(ex.description) === 'order' ? 'Order' : 'Expense'}</td>
+                            <td>{(ex.description === 'order') ? 'Order' : 'Expense'}</td>
                             <td>{(ex.expensedetail == null) ? 'Order Payment' : ex.expensedetail}</td>
-                           <td>{suppliers.find((pt) => pt.id == ex.supplier)?.suppliername || ''}</td>
+                            <td>{suppliers.find((pt) => pt.id == ex.supplier)?.suppliername || ''}</td>
                             <td>{ex.amount}</td>
                             <td>{ex.clerk}</td>
                           </tr>
@@ -163,8 +207,8 @@ function AllFinances() {
                       </tbody>
                       <tfoot>
                         <tr>
-                          <td colSpan="4"><strong style={{ fontWeight: 'bold' }}>Total</strong></td>
-                          <td colSpan="2"><strong style={{ fontWeight: 'bold' }}>{totalAmount.toFixed(2)}</strong></td>
+                          <td colSpan="4"><strong style={{ fontWeight: 'bold' }}>Closing Balance</strong></td>
+                          <td colSpan="2"><strong style={{ fontWeight: 'bold' }}>{closingBalance.toFixed(2)}</strong></td>
                         </tr>
                       </tfoot>
                     </table>
