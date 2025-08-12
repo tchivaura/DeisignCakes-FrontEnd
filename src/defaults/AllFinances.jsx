@@ -75,9 +75,11 @@ function AllFinances() {
   const filterPayments = () => {
     let data = [...allpayments];
 
-    if (filters.paymentType) {
-      data = data.filter(p => p.paymenttype == filters.paymentType);
-    }
+  const selectedPaymentType = filters.paymentType === '' ? 0 : filters.paymentType;
+if (selectedPaymentType !== 0) {
+  data = data.filter(p => p.paymenttype == selectedPaymentType);
+}
+
 
     if (filters.transactionType) {
       data = data.filter(p => (p.description === 'order' ? 'Order' : 'Expense') === filters.transactionType);
