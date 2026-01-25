@@ -25,23 +25,15 @@ function EditCustomer() {
     FullName: '',
     Relationship: '',
     Contact: '',
-    DOB:'',
-    gender:''
+    DOB: '',
+    gender: ''
   });
   const [editingLovedOne, setEditingLovedOne] = useState(null);
 
   useEffect(() => {
-    axiosInstance.get(`/customers/${id}`).then(res => {
-      setCustomer(res.data);
-    });
-
-    axiosInstance.get(`/LovedOnes/${id}`).then(res => {
-      setLovedOnes(res.data);
-    });
-
-    axiosInstance.get(`/Labels`).then(res => {
-      setLabels(res.data);
-    });
+    axiosInstance.get(`/customers/${id}`).then(res => setCustomer(res.data));
+    axiosInstance.get(`/LovedOnes/${id}`).then(res => setLovedOnes(res.data));
+    axiosInstance.get(`/Labels`).then(res => setLabels(res.data));
   }, [id]);
 
   const handleCustomerChange = (e) => {
@@ -59,43 +51,67 @@ function EditCustomer() {
   const handleLovedOneChange = (e) => {
     const { name, value } = e.target;
     if (editingLovedOne) {
-      setEditingLovedOne({ ...editingLovedOne, [name]: value });
+      setEditingLovedOne(prev => ({ ...prev, [name]: value }));
     } else {
-      setNewLovedOne({ ...newLovedOne, [name]: value });
+      setNewLovedOne(prev => ({ ...prev, [name]: value }));
     }
   };
 
   const handleAddLovedOne = (e) => {
     e.preventDefault();
-    axiosInstance.post('/LovedOnes', {
-      ...newLovedOne,
-      customerId: id
-    }).then(res => {
-      setLovedOnes([...lovedOnes, res.data]);
-      console.log(newLovedOne);
-      setNewLovedOne({ FullName: '', Relationship: '', Contact: '', DOB:'',gender:''});
-      toast.success('Loved one added!');
-    });
+    axiosInstance.post('/LovedOnes', { ...newLovedOne, customerId: id })
+      .then(res => {
+        setLovedOnes([...lovedOnes, res.data]);
+        setNewLovedOne({ FullName: '', Relationship: '', Contact: '', DOB: '', gender: '' });
+        toast.success('Loved one added!');
+
+        // Close Add Loved One modal manually
+        const modalEl = document.getElementById('addLovedOneModal');
+        const modal = window.bootstrap.Modal.getInstance(modalEl);
+        modal?.hide();
+        document.body.classList.remove('modal-open');
+        document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+      })
+      .catch(err => {
+        toast.error('Failed to add loved one.');
+        console.error(err);
+      });
   };
 
   const handleEditLovedOne = (e) => {
     e.preventDefault();
-    axiosInstance.put(`/LovedOnes/${editingLovedOne.id}`, editingLovedOne).then(() => {
-      const updated = lovedOnes.map(lo =>
-        lo.id === editingLovedOne.id ? editingLovedOne : lo
-      );
-      setLovedOnes(updated);
-      setEditingLovedOne(null);
-      toast.success('Loved one updated!');
-    });
+    axiosInstance.put(`/LovedOnes/${editingLovedOne.id}`, editingLovedOne)
+      .then(() => {
+        setLovedOnes(prev =>
+          prev.map(lo => lo.id === editingLovedOne.id ? editingLovedOne : lo)
+        );
+
+        // Close Edit Loved One modal manually
+        const modalEl = document.getElementById('editLovedOneModal');
+        const modal = window.bootstrap.Modal.getInstance(modalEl);
+        modal?.hide();
+        document.body.classList.remove('modal-open');
+        document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+
+        setEditingLovedOne(null);
+        toast.success('Loved one updated!');
+      })
+      .catch(err => {
+        toast.error('Failed to update loved one.');
+        console.error(err);
+      });
   };
 
   const handleDeleteLovedOne = (idToDelete) => {
-    axiosInstance.delete(`/lovedOnes/${idToDelete}`).then(() => {
-      const filtered = lovedOnes.filter(lo => lo.id !== idToDelete);
-      setLovedOnes(filtered);
-      toast.success('Loved one deleted!');
-    });
+    axiosInstance.delete(`/LovedOnes/${idToDelete}`)
+      .then(() => {
+        setLovedOnes(lovedOnes.filter(lo => lo.id !== idToDelete));
+        toast.success('Loved one deleted!');
+      })
+      .catch(err => {
+        toast.error('Failed to delete loved one.');
+        console.error(err);
+      });
   };
 
   return (
@@ -107,128 +123,65 @@ function EditCustomer() {
             <div className="main-body">
               <div className="page-wrapper">
 
-                {/* Back Button */}
-               
-
                 {/* Customer Form */}
                 <div className="card">
                   <div className="card-header"><h5>Edit Customer</h5></div>
                   <div className="card-body">
                     <form onSubmit={handleCustomerSubmit}>
                       <div className="row mb-3">
-                       
-                          <div className="col-md-3">
-                            <label htmlFor="firstName" className="form-label">First Name</label>
-                            <input
-                              type="text"
-                              className="form-control"
-                              id="firstName"
-                              name="firstName"
-                              value={customer.firstName}
-                              onChange={handleCustomerChange}
-                            />
-                          </div>
-                          <div className="col-md-3">
-                            <label htmlFor="surname" className="form-label">Surname</label>
-                            <input
-                              type="text"
-                              className="form-control"
-                              id="surname"
-                              name="surname"
-                              value={customer.surname}
-                              onChange={handleCustomerChange}
-                            />
-                          </div>
-                          
-                          <div className="col-md-3">
-                            <label htmlFor="telephone" className="form-label">Telephone</label>
-                            <input
-                              type="text"
-                              className="form-control"
-                              id="telephone"
-                              name="telephone"
-                              value={customer.telephone}
-                              onChange={handleCustomerChange}
-                            />
-                          </div>
-                          <div className="col-md-3">
-  <label htmlFor="gender" className="form-label">Gender</label>
-  <select
-    className="form-control"
-    id="gender"
-    name="gender"
-    value={customer.gender}
-    onChange={handleCustomerChange}
-  >
-    <option value="">Select Gender</option>
-    <option value="Male">Male</option>
-    <option value="Female">Female</option>
-    <option value="Other">Other</option>
-  </select>
-</div>
-</div>
-<div className="row mb-3">
-                        
-                          
-                          <div className="col-md-3">
-                            <label htmlFor="addresss" className="form-label">address</label>
-                            <input
-                              type="text"
-                              className="form-control"
-                              id="addresss"
-                              name="addresss"
-                              value={customer.addresss}
-                              onChange={handleCustomerChange}
-                            />
-                          </div>
-                          <div className="col-md-3">
-                            <label htmlFor="dob" className="form-label">Date of Birth</label>
-                            <input
-                              type="date"
-                              className="form-control"
-                              id="dob"
-                              name="dob"
-                              value={customer.dob}
-                              onChange={handleCustomerChange}
-                            />
-                          </div>
-                          <div className="col-md-3">
-                            <label htmlFor="base" className="form-label">Base</label>
-                            <input
-                              type="text"
-                              className="form-control"
-                              id="base"
-                              name="base"
-                              value={customer.base}
-                              onChange={handleCustomerChange}
-                            />
-                          </div>
-                          <div className="col-md-3">
-                            <label htmlFor="label" className="form-label">Label</label>
-                            <select
-                              className="form-control"
-                              id="label"
-                              name="label"
-                              value={customer.label}
-                              onChange={handleCustomerChange}
-                            >
-                              <option value="">Select Label</option>
-                              {labels.map(label => (
-                                <option key={label.id} value={label.name}>{label.name}</option>
-                              ))}
-                            </select>
-                          
+                        <div className="col-md-3">
+                          <label htmlFor="firstName" className="form-label">First Name</label>
+                          <input type="text" className="form-control" id="firstName" name="firstName" value={customer.firstName} onChange={handleCustomerChange} />
                         </div>
+                        <div className="col-md-3">
+                          <label htmlFor="surname" className="form-label">Surname</label>
+                          <input type="text" className="form-control" id="surname" name="surname" value={customer.surname} onChange={handleCustomerChange} />
                         </div>
-                        <div className="row mb-3">
-                        <div className="col-md-12" style={{"alignItems" :"center","margin-left":"500px"}}>
-                          <button type="submit" className="btn btn-primary">Save Changes</button>
-                          <button type="button" className="btn btn-primary" onClick={() => navigate('/customers')}>
-                    Back to Customers
-                  </button>
+                        <div className="col-md-3">
+                          <label htmlFor="telephone" className="form-label">Telephone</label>
+                          <input type="text" className="form-control" id="telephone" name="telephone" value={customer.telephone} onChange={handleCustomerChange} />
                         </div>
+                        <div className="col-md-3">
+                          <label htmlFor="gender" className="form-label">Gender</label>
+                          <select className="form-control" id="gender" name="gender" value={customer.gender} onChange={handleCustomerChange}>
+                            <option value="">Select Gender</option>
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                            <option value="Other">Other</option>
+                          </select>
                         </div>
-                     
+                      </div>
+
+                      <div className="row mb-3">
+                        <div className="col-md-3">
+                          <label htmlFor="addresss" className="form-label">Address</label>
+                          <input type="text" className="form-control" id="addresss" name="addresss" value={customer.addresss} onChange={handleCustomerChange} />
+                        </div>
+                        <div className="col-md-3">
+                          <label htmlFor="dob" className="form-label">Date of Birth</label>
+                          <input type="date" className="form-control" id="dob" name="dob" value={customer.dob} onChange={handleCustomerChange} />
+                        </div>
+                        <div className="col-md-3">
+                          <label htmlFor="base" className="form-label">Base</label>
+                          <input type="text" className="form-control" id="base" name="base" value={customer.base} onChange={handleCustomerChange} />
+                        </div>
+                        <div className="col-md-3">
+                          <label htmlFor="label" className="form-label">Label</label>
+                          <select className="form-control" id="label" name="label" value={customer.label} onChange={handleCustomerChange}>
+                            <option value="">Select Label</option>
+                            {labels.map(label => (
+                              <option key={label.id} value={label.name}>{label.name}</option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
+
+                      <div className="row mb-3">
+                        <div className="col-md-12 d-flex justify-content-center">
+                          <button type="submit" className="btn btn-primary me-2">Save Changes</button>
+                          <button type="button" className="btn btn-primary" onClick={() => navigate('/customers')}>Back to Customers</button>
+                        </div>
+                      </div>
                     </form>
                   </div>
                 </div>
@@ -237,7 +190,11 @@ function EditCustomer() {
                 <div className="card mt-4">
                   <div className="card-header d-flex justify-content-between">
                     <h5>Loved Ones</h5>
-                    <button className="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#addLovedOneModal">
+                    <button className="btn btn-sm btn-outline-primary" onClick={() => {
+                      const modalEl = document.getElementById('addLovedOneModal');
+                      const modal = new window.bootstrap.Modal(modalEl);
+                      modal.show();
+                    }}>
                       Add Loved One
                     </button>
                   </div>
@@ -248,9 +205,8 @@ function EditCustomer() {
                           <th>#</th>
                           <th>Full Name</th>
                           <th>Relationship</th>
-                          
                           <th>Gender</th>
-                           <th>Date Of Birth</th>
+                          <th>Date Of Birth</th>
                           <th>Actions</th>
                         </tr>
                       </thead>
@@ -263,20 +219,19 @@ function EditCustomer() {
                             <td>{lo.gender}</td>
                             <td>{lo.dob}</td>
                             <td>
-                            <i 
-                  className="fas fa-edit fa-lg me-5 text-primary "  
-                  data-bs-toggle="modal" 
-                  data-bs-target="#editLovedOneModal" 
-                  onClick={() => setEditingLovedOne(lo)}
-              ></i>
-
-              <i 
-                 className="fas fa-trash fa-lg text-danger"  style={{"margin-left":"5px"}}
-                 onClick={() => handleDeleteLovedOne(lo.id)}
-              ></i>
-
-                              
-                              
+                              <i
+                                className="fas fa-edit fa-lg me-2 text-primary"
+                                onClick={() => {
+                                  setEditingLovedOne({ ...lo });
+                                  const modalEl = document.getElementById('editLovedOneModal');
+                                  const modal = new window.bootstrap.Modal(modalEl);
+                                  modal.show();
+                                }}
+                              ></i>
+                              <i
+                                className="fas fa-trash fa-lg text-danger"
+                                onClick={() => handleDeleteLovedOne(lo.id)}
+                              ></i>
                             </td>
                           </tr>
                         ))}
@@ -291,85 +246,85 @@ function EditCustomer() {
                     <form onSubmit={handleAddLovedOne} className="modal-content">
                       <div className="modal-header">
                         <h5 className="modal-title">Add Loved One</h5>
-                        
                       </div>
                       <div className="modal-body d-flex flex-column align-items-center">
-                      <div className="mb-3 w-100" style={{ maxWidth: "400px" }}>
-                      <label htmlFor="fullName" className="form-label">Full Name</label>
-                     <input type="text" required className="form-control" name="FullName" placeholder="Full Name" value={newLovedOne.FullName} onChange={handleLovedOneChange} />
-                     </div>
-                    <div className="mb-3 w-100" style={{ maxWidth: "400px" }}>
-                    <label htmlFor="relationship" className="form-label">Relationship</label>
-                  <input type="text" required className="form-control" name="Relationship" placeholder="Relationship" value={newLovedOne.Relationship} onChange={handleLovedOneChange} />
-               </div>
-              <div className="mb-3 w-100" style={{ maxWidth: "400px" }}>
-               <label htmlFor="contact" className="form-label">Contact</label>
-                <input type="text" className="form-control" name="Contact" placeholder="Contact" value={newLovedOne.Contact} onChange={handleLovedOneChange} />
-               </div>
-               <div className="mb-3 w-100" style={{ maxWidth: "400px" }}>
-               <label htmlFor="contact" className="form-label">Date Of Birth</label>
-                <input type="date" className="form-control" name="DOB" placeholder="DOB" value={newLovedOne.DOB} onChange={handleLovedOneChange} />
-               </div>
-                <div className="mb-3 w-100" style={{ maxWidth: "400px" }}>
-                  <label>Gender</label>
-                < select
-                    className="form-control"
-                    value={newLovedOne.gender}
-                    onChange={handleLovedOneChange}
-                    name="gender"
-                  >
-                    <option value="">Select Gender</option>
-                    <option value="Male">Male</option>
-                    <option value="Female">Female</option>
-                   
-                  </select>
-                </div>
-              </div>
-                      <div className="modal-footer d-flex justify-content-center" >
-                      <button type="submit" className="btn btn-primary" >Save</button>
-                        <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        
+                        <div className="mb-3 w-100" style={{ maxWidth: "400px" }}>
+                          <label className="form-label">Full Name</label>
+                          <input type="text" required className="form-control" name="FullName" value={newLovedOne.FullName} onChange={handleLovedOneChange} />
+                        </div>
+                        <div className="mb-3 w-100" style={{ maxWidth: "400px" }}>
+                          <label className="form-label">Relationship</label>
+                          <input type="text" required className="form-control" name="Relationship" value={newLovedOne.Relationship} onChange={handleLovedOneChange} />
+                        </div>
+                        <div className="mb-3 w-100" style={{ maxWidth: "400px" }}>
+                          <label className="form-label">Contact</label>
+                          <input type="text" className="form-control" name="Contact" value={newLovedOne.Contact} onChange={handleLovedOneChange} />
+                        </div>
+                        <div className="mb-3 w-100" style={{ maxWidth: "400px" }}>
+                          <label className="form-label">Date Of Birth</label>
+                          <input type="date" className="form-control" name="DOB" value={newLovedOne.DOB} onChange={handleLovedOneChange} />
+                        </div>
+                        <div className="mb-3 w-100" style={{ maxWidth: "400px" }}>
+                          <label className="form-label">Gender</label>
+                          <select className="form-control" name="gender" value={newLovedOne.gender} onChange={handleLovedOneChange}>
+                            <option value="">Select Gender</option>
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                          </select>
+                        </div>
+                      </div>
+                      <div className="modal-footer d-flex justify-content-center">
+                        <button type="submit" className="btn btn-primary">Save</button>
+                        <button type="button" className="btn btn-secondary" onClick={() => {
+                          const modalEl = document.getElementById('addLovedOneModal');
+                          const modal = window.bootstrap.Modal.getInstance(modalEl);
+                          modal?.hide();
+                          document.body.classList.remove('modal-open');
+                          document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+                        }}>Close</button>
                       </div>
                     </form>
                   </div>
                 </div>
 
                 {/* Edit Loved One Modal */}
-                {editingLovedOne && (
-                  <div className="modal fade" id="editLovedOneModal" tabIndex="-1" aria-hidden="true">
-                    <div className="modal-dialog">
-                      <form onSubmit={handleEditLovedOne} className="modal-content">
-                        <div className="modal-header">
-                          <h5 className="modal-title">Edit Loved One</h5>
-                          
-                        </div>
-                        <div className="modal-body d-flex flex-column align-items-center" >
+                <div className="modal fade" id="editLovedOneModal" tabIndex="-1" aria-hidden="true">
+                  <div className="modal-dialog">
+                    <form onSubmit={handleEditLovedOne} className="modal-content">
+                      <div className="modal-header">
+                        <h5 className="modal-title">Edit Loved One</h5>
+                      </div>
+                      <div className="modal-body d-flex flex-column align-items-center">
                         <div className="mb-3 w-100" style={{ maxWidth: "400px" }}>
-                            <label htmlFor="fullName" className="form-label">Full Name</label>
-                            <input type="text" className="form-control" name="fullName" placeholder="Full Name" value={editingLovedOne.fullName} onChange={handleLovedOneChange} />
-                          </div>
-                          <div className="mb-3 w-100" style={{ maxWidth: "400px" }}>
-                            <label htmlFor="relationship" className="form-label">Relationship</label>
-                            <input type="text" className="form-control" name="relationship" placeholder="Relationship" value={editingLovedOne.relationship} onChange={handleLovedOneChange} />
-                          </div>
-                          <div className="mb-3 w-100" style={{ maxWidth: "400px" }}>
-                            <label htmlFor="contact" className="form-label">Contact</label>
-                            <input type="text" className="form-control" name="contact" placeholder="Contact" value={editingLovedOne.contact} onChange={handleLovedOneChange} />
-                          </div>
-                          <div className="mb-3 w-100" style={{ maxWidth: "400px" }}>
-                            <label htmlFor="contact" className="form-label">Date of Birth</label>
-                            <input type="date" className="form-control" name="DOB" placeholder="DOB" value={editingLovedOne.DOB} onChange={handleLovedOneChange} />
-                          </div>
+                          <label className="form-label">Full Name</label>
+                          <input type="text" className="form-control" name="fullName" value={editingLovedOne?.fullName || ''} onChange={handleLovedOneChange} />
                         </div>
-                        <div className="modal-footer d-flex justify-content-center">
+                        <div className="mb-3 w-100" style={{ maxWidth: "400px" }}>
+                          <label className="form-label">Relationship</label>
+                          <input type="text" className="form-control" name="relationship" value={editingLovedOne?.relationship || ''} onChange={handleLovedOneChange} />
+                        </div>
+                        <div className="mb-3 w-100" style={{ maxWidth: "400px" }}>
+                          <label className="form-label">Contact</label>
+                          <input type="text" className="form-control" name="contact" value={editingLovedOne?.contact || ''} onChange={handleLovedOneChange} />
+                        </div>
+                        <div className="mb-3 w-100" style={{ maxWidth: "400px" }}>
+                          <label className="form-label">Date of Birth</label>
+                          <input type="date" className="form-control" name="DOB" value={editingLovedOne?.DOB || ''} onChange={handleLovedOneChange} />
+                        </div>
+                      </div>
+                      <div className="modal-footer d-flex justify-content-center">
                         <button type="submit" className="btn btn-primary">Save</button>
-                          <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                          
-                        </div>
-                      </form>
-                    </div>
+                        <button type="button" className="btn btn-secondary" onClick={() => {
+                          const modalEl = document.getElementById('editLovedOneModal');
+                          const modal = window.bootstrap.Modal.getInstance(modalEl);
+                          modal?.hide();
+                          document.body.classList.remove('modal-open');
+                          document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+                        }}>Close</button>
+                      </div>
+                    </form>
                   </div>
-                )}
+                </div>
 
               </div>
             </div>

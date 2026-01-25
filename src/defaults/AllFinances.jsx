@@ -4,91 +4,97 @@ import 'react-toastify/dist/ReactToastify.css';
 import axiosInstance from '../api/axios';
 
 function AllFinances() {
-  const [allpayments, setAllpayments] = useState([]);
-  const [paymentTypes, setPaymentTypes] = useState([]);
+  const [allPayments, setAllPayments] = useState([]);
   const [filteredPayments, setFilteredPayments] = useState([]);
-  const [suppliers, setsuppliers] = useState([]);
+  const [paymentTypes, setPaymentTypes] = useState([]);
+  const [suppliers, setSuppliers] = useState([]);
   const [openingBalance, setOpeningBalance] = useState(0);
+
   const [filters, setFilters] = useState({
-    paymentType: '',
-    transactionType: '',
-    startDate: '',
+    paymentType: '',        // '' = All
+    transactionType: '',    // '' = All
+    startDate: '',          // '' = no filter
     endDate: ''
   });
 
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 20;
 
-  // ⏱️ On first load
+  // Load data on first render
   useEffect(() => {
     fetchAllPayments();
-    axiosInstance.get('/paymenttypes').then(res => {
-      setPaymentTypes(res.data);
-
-      const cashType = res.data.find(pt => pt.name.toLowerCase() === "cash");
-      const today = new Date().toISOString().split('T')[0];
-
-      if (cashType) {
-        setFilters(prev => ({
-          ...prev,
-          paymentType: cashType.id,
-          startDate: today
-        }));
-      }
-    });
-    axiosInstance.get('/suppliers').then(res => setsuppliers(res.data));
+    fetchPaymentTypes();
+    fetchSuppliers();
   }, []);
 
-  const fetchAllPayments = () => {
-    axiosInstance
-      .get('/Payments')
-      .then((res) => {
-        setAllpayments(res.data);
-        setFilteredPayments(res.data);
-      })
-      .catch((err) => console.log(err));
+  const fetchAllPayments = async () => {
+    try {
+      const res = await axiosInstance.get('/Payments');
+      setAllPayments(res.data);
+      setFilteredPayments(res.data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const fetchPaymentTypes = async () => {
+    try {
+      const res = await axiosInstance.get('/paymenttypes');
+      setPaymentTypes(res.data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const fetchSuppliers = async () => {
+    try {
+      const res = await axiosInstance.get('/suppliers');
+      setSuppliers(res.data);
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
-    setFilters({ ...filters, [name]: value });
+    setFilters(prev => ({ ...prev, [name]: value }));
   };
 
   const handleResetFilters = () => {
-    const today = new Date().toISOString().split('T')[0];
-    const cashType = paymentTypes.find(pt => pt.name.toLowerCase() === "cash");
     setFilters({
-      paymentType: cashType ? cashType.id : '',
+      paymentType: '',
       transactionType: '',
-      startDate: today,
+      startDate: '',
       endDate: ''
     });
   };
 
-  // 👀 Watch filters and payments
+  // Watch filters and payments
   useEffect(() => {
     filterPayments();
     fetchOpeningBalance();
     setCurrentPage(1);
-  }, [filters, allpayments]);
+  }, [filters, allPayments]);
 
   const filterPayments = () => {
-    let data = [...allpayments];
+    let data = [...allPayments];
 
-  const selectedPaymentType = filters.paymentType === '' ? 0 : filters.paymentType;
-if (selectedPaymentType !== 0) {
-  data = data.filter(p => p.paymenttype == selectedPaymentType);
-}
+    // Payment type
+    if (filters.paymentType) {
+      data = data.filter(p => p.paymenttype == filters.paymentType);
+    }
 
-
+    // Transaction type
     if (filters.transactionType) {
       data = data.filter(p => (p.description === 'order' ? 'Order' : 'Expense') === filters.transactionType);
     }
 
+    // Start date
     if (filters.startDate) {
       data = data.filter(p => new Date(p.date) >= new Date(filters.startDate));
     }
 
+    // End date
     if (filters.endDate) {
       data = data.filter(p => new Date(p.date) <= new Date(filters.endDate));
     }
@@ -97,13 +103,12 @@ if (selectedPaymentType !== 0) {
   };
 
   const fetchOpeningBalance = () => {
-    if (!filters.startDate || !filters.paymentType) {
-      setOpeningBalance(0);
-      return;
-    }
+    // If startDate is empty, get full balance
+    const startParam = filters.startDate || '';
+    const paymentTypeParam = filters.paymentType || '';
 
     axiosInstance
-      .get(`/payments/balance?startdate=${filters.startDate}&paymenttype=${filters.paymentType}`)
+      .get(`/payments/balance?startdate=${startParam}&paymenttype=${paymentTypeParam}`)
       .then(res => setOpeningBalance(res.data))
       .catch(err => {
         console.error('Failed to fetch opening balance:', err);
@@ -111,11 +116,10 @@ if (selectedPaymentType !== 0) {
       });
   };
 
-  const filteredTotal = filteredPayments.reduce((sum, p) => sum + parseFloat(p.amount), 0);
+  const filteredTotal = filteredPayments.reduce((sum, p) => sum + parseFloat(p.amount || 0), 0);
   const closingBalance = openingBalance + filteredTotal;
 
-
-  // Pagination Logic
+  // Pagination
   const indexOfLast = currentPage * itemsPerPage;
   const indexOfFirst = indexOfLast - itemsPerPage;
   const currentItems = filteredPayments.slice(indexOfFirst, indexOfLast);
@@ -200,8 +204,8 @@ if (selectedPaymentType !== 0) {
                             <td>{ex.date}</td>
                             <td>{paymentTypes.find((pt) => pt.id == ex.paymenttype)?.name || 'Unknown'}</td>
                             <td>{(ex.description === 'order') ? 'Order' : 'Expense'}</td>
-                            <td>{(ex.expensedetail == null) ? 'Order Payment' : ex.expensedetail}</td>
-                            <td>{suppliers.find((pt) => pt.id == ex.supplier)?.suppliername || ''}</td>
+                            <td>{ex.expensedetail || 'Order Payment'}</td>
+                            <td>{suppliers.find((s) => s.id == ex.supplier)?.suppliername || ''}</td>
                             <td>{ex.amount}</td>
                             <td>{ex.clerk}</td>
                           </tr>
@@ -209,8 +213,8 @@ if (selectedPaymentType !== 0) {
                       </tbody>
                       <tfoot>
                         <tr>
-                          <td colSpan="4"><strong style={{ fontWeight: 'bold' }}>Closing Balance</strong></td>
-                          <td colSpan="2"><strong style={{ fontWeight: 'bold' }}>{closingBalance.toFixed(2)}</strong></td>
+                          <td colSpan="4"><strong>Closing Balance</strong></td>
+                          <td colSpan="2"><strong>{closingBalance.toFixed(2)}</strong></td>
                         </tr>
                       </tfoot>
                     </table>
@@ -219,20 +223,8 @@ if (selectedPaymentType !== 0) {
                     <div className="d-flex justify-content-between align-items-center">
                       <span>Page {currentPage} of {totalPages}</span>
                       <div>
-                        <button
-                          className="btn btn-sm btn-primary me-2"
-                          disabled={currentPage === 1}
-                          onClick={() => setCurrentPage(prev => prev - 1)}
-                        >
-                          Previous
-                        </button>
-                        <button
-                          className="btn btn-sm btn-primary"
-                          disabled={currentPage === totalPages}
-                          onClick={() => setCurrentPage(prev => prev + 1)}
-                        >
-                          Next
-                        </button>
+                        <button className="btn btn-sm btn-primary me-2" disabled={currentPage === 1} onClick={() => setCurrentPage(prev => prev - 1)}>Previous</button>
+                        <button className="btn btn-sm btn-primary" disabled={currentPage === totalPages} onClick={() => setCurrentPage(prev => prev + 1)}>Next</button>
                       </div>
                     </div>
                   </div> {/* end card-body */}

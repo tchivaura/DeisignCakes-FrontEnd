@@ -81,6 +81,12 @@ function SideNav({ role }) {
                 <span className="pcoded-mtext">All Transactions</span>
               </NavLink>
             </li>
+             <li className="nav-item">
+              <NavLink to="/orderanalysis" className={getLinkClass}>
+                <span className="pcoded-micon"><i className="feather icon-layers" /></span>
+                <span className="pcoded-mtext">Order Analysis</span>
+              </NavLink>
+            </li>
 
             <li className="nav-item pcoded-menu-caption">
               <label>Customer Management</label>

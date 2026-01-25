@@ -24,6 +24,7 @@ import Expenses from './defaults/Expenses';
 import AllFinances from './defaults/AllFinances';
 import Suppliers from './defaults/Suppliers';
 import ProductSizes from './defaults/ProductSizes';
+import OrdersAnalysis from './defaults/OrdersAnalysis';
 
 
 function AppContent() {
@@ -69,6 +70,7 @@ function AppContent() {
         <Route path="/alltransactions" element={<AllFinances/>} />
         <Route path="/suppliers" element={<Suppliers/>} />
         <Route path="/productsizes" element={<ProductSizes/>} />
+        <Route path="/orderanalysis" element={<OrdersAnalysis/>} />
       </Routes>
     </div>
   );
